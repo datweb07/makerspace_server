@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "npx nodemon",
-    "build": "rimraf ./dist && tsc && tsc-alias",
+    "build": "node -e \"fs.rmSync('./dist', { recursive: true, force: true })\" && tsc && tsc-alias",
     "start": "node dist/src/index.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
