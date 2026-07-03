@@ -1,4 +1,5 @@
 import path from "path";
+import fs from "fs"; 
 import cors from "@fastify/cors";
 import fastify, { FastifyRequest, HookHandlerDoneFunction } from "fastify";
 import fastifyCookie from "@fastify/cookie";
@@ -27,7 +28,12 @@ import { DEFAULT_API_PREFIX } from "./constants";
 
       try {
         const hostname = new URL(origin).hostname;
+        
         if (hostname === "localhost" || hostname === "127.0.0.1") {
+          return cb(null, true);
+        }
+
+        if (hostname.endsWith("ueh.edu.vn") || hostname.includes("vercel.app")) {
           return cb(null, true);
         }
 
@@ -39,8 +45,13 @@ import { DEFAULT_API_PREFIX } from "./constants";
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   });
 
+  const publicPath = path.join(process.cwd(), "public");
+  if (!fs.existsSync(publicPath)) {
+    fs.mkdirSync(publicPath, { recursive: true });
+  }
+
   server.register(fastifyStatic, {
-    root: path.join(process.cwd(), "public"),
+    root: publicPath,
     prefix: "/public/",
   });
 
@@ -71,6 +82,11 @@ import { DEFAULT_API_PREFIX } from "./constants";
       done();
     },
   );
+
+  server.get("/", async () => ({
+    ok: true,
+    message: "Welcome to MakerSpace API Server",
+  }));
 
   server.get("/health", async () => ({
     ok: true,
