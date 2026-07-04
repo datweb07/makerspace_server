@@ -8,6 +8,7 @@ async function main() {
     user: envConfig.POSTGRES_USER_VI,
     password: envConfig.POSTGRES_PASSWORD_VI,
     database: envConfig.POSTGRES_DB_VI,
+    ssl: envConfig.POSTGRES_DB_HOST_VI.includes("supabase") ? { rejectUnauthorized: false } : undefined,
   });
 
   const enPool = new Pool({
@@ -16,6 +17,7 @@ async function main() {
     user: envConfig.POSTGRES_USER_EN,
     password: envConfig.POSTGRES_PASSWORD_EN,
     database: envConfig.POSTGRES_DB_EN,
+    ssl: envConfig.POSTGRES_DB_HOST_EN.includes("supabase") ? { rejectUnauthorized: false } : undefined,
   });
 
   const queries = [
