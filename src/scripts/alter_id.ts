@@ -5,7 +5,7 @@ async function main() {
   const viPool = new Pool({
     host: envConfig.POSTGRES_DB_HOST_VI,
     port: envConfig.POSTGRES_DB_PORT,
-    user: envConfig.POSTGRES_USER,
+    user: envConfig.POSTGRES_USER_VI,
     password: envConfig.POSTGRES_PASSWORD_VI,
     database: envConfig.POSTGRES_DB_VI,
   });
@@ -13,7 +13,7 @@ async function main() {
   const enPool = new Pool({
     host: envConfig.POSTGRES_DB_HOST_EN,
     port: envConfig.POSTGRES_DB_PORT,
-    user: envConfig.POSTGRES_USER,
+    user: envConfig.POSTGRES_USER_EN,
     password: envConfig.POSTGRES_PASSWORD_EN,
     database: envConfig.POSTGRES_DB_EN,
   });

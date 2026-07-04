@@ -6,7 +6,7 @@ const pools: Partial<Record<string, Pool>> = {};
 export function getPool(lang: string = "vi") {
   if (!pools[lang]) {
     pools[lang] = new Pool({
-      user: envConfig.POSTGRES_USER,
+      user: lang === "en" ? envConfig.POSTGRES_USER_EN : envConfig.POSTGRES_USER_VI,
       host: lang === "en" ? envConfig.POSTGRES_DB_HOST_EN : envConfig.POSTGRES_DB_HOST_VI,
       database:
         lang === "en" ? envConfig.POSTGRES_DB_EN : envConfig.POSTGRES_DB_VI,

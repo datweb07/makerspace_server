@@ -6,6 +6,8 @@ const env = {
   PORT: process.env.PORT ?? "4000",
   POSTGRES_DB_HOST_EN: process.env.POSTGRES_DB_HOST_EN ?? process.env.POSTGRES_DB_HOST ?? "localhost",
   POSTGRES_DB_HOST_VI: process.env.POSTGRES_DB_HOST_VI ?? process.env.POSTGRES_DB_HOST ?? "localhost",
+  POSTGRES_USER_EN: process.env.POSTGRES_USER_EN ?? process.env.POSTGRES_USER ?? "postgres",
+  POSTGRES_USER_VI: process.env.POSTGRES_USER_VI ?? process.env.POSTGRES_USER ?? "postgres",
   POSTGRES_USER: process.env.POSTGRES_USER ?? "postgres",
   POSTGRES_PASSWORD_EN: process.env.POSTGRES_PASSWORD_EN ?? process.env.POSTGRES_PASSWORD ?? "postgres",
   POSTGRES_PASSWORD_VI: process.env.POSTGRES_PASSWORD_VI ?? process.env.POSTGRES_PASSWORD ?? "postgres",
