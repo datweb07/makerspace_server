@@ -1,0 +1,71 @@
+import { getPool } from "./db/pool";
+import { CreateEventsType, UpdateEventsType } from "../schemaValidation/events.schema";
+
+class EventsModel {
+  async getAll(lang: string = "vi") {
+    return getPool(lang).query({
+      text: `SELECT * FROM posts.events ORDER BY publish_date DESC`,
+    });
+  }
+
+  async getById(id: string, lang: string = "vi") {
+    return getPool(lang).query({
+      text: `SELECT * FROM posts.events WHERE id = $1`,
+      values: [id],
+    });
+  }
+
+  async getBySlug(slug: string, lang: string = "vi") {
+    return getPool(lang).query({
+      text: `SELECT * FROM posts.events WHERE slug = $1`,
+      values: [slug],
+    });
+  }
+
+  async insert(data: CreateEventsType, lang: string = "vi") {
+    return getPool(lang).query({
+      text: `INSERT INTO posts.events (title, slug, seo_title, cover_image, description, content, author, publish_date, draft, event_time) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+      values: [
+        data.title,
+        data.slug,
+        data.seo_title,
+        data.cover_image,
+        data.description || null,
+        data.content,
+        data.author,
+        data.publish_date,
+        data.draft ?? false,
+        data.event_time || null
+      ],
+    });
+  }
+
+  async update(id: string, data: UpdateEventsType, lang: string = "vi") {
+    const fields = Object.keys(data);
+    const values = Object.values(data);
+
+    if (fields.length === 0) throw new Error("No data to update");
+
+    let setClause = fields.map((field, index) => `"${field}" = $${index + 1}`).join(", ");
+    setClause += `, updated_at = CURRENT_TIMESTAMP`;
+
+    values.push(id);
+    const idIndex = values.length;
+
+    return getPool(lang).query({
+      text: `UPDATE posts.events SET ${setClause} WHERE id = $${idIndex} RETURNING *`,
+      values: [...values],
+    });
+  }
+
+  async delete(id: string, lang: string = "vi") {
+    return getPool(lang).query({
+      text: `DELETE FROM posts.events WHERE id = $1 RETURNING *`,
+      values: [id],
+    });
+  }
+}
+
+export default new EventsModel();
+
