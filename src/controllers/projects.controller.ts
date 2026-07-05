@@ -35,6 +35,24 @@ export const getProjectsById = async (
   }
 };
 
+export const getProjectsBySlug = async (
+  req: FastifyRequest<{ Params: { slug: string } }>,
+  reply: FastifyReply
+) => {
+  try {
+    const result = await projectsModel.getBySlug(req.params.slug, req.lang);
+    if (result.rows.length === 0) {
+      return reply.status(404).send({ message: "Not found" });
+    }
+    const item = result.rows[0];
+    item.cover_image = formatImageUrl(item.cover_image);
+    reply.send({ data: item });
+  } catch (error) {
+    console.error(error);
+    reply.status(500).send({ message: "Internal Server Error" });
+  }
+};
+
 export const createProjects = async (
   req: FastifyRequest<{ Body: CreateProjectsType }>,
   reply: FastifyReply

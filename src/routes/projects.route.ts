@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import {
   getProjectsList,
   getProjectsById,
+  getProjectsBySlug,
   createProjects,
   updateProjects,
   deleteProjects,
@@ -10,6 +11,7 @@ import { CreateProjectsBody, UpdateProjectsBody } from "../schemaValidation/proj
 
 export default async function projectsRoutes(fastify: FastifyInstance) {
   fastify.get("/", getProjectsList);
+  fastify.get("/slug/:slug", getProjectsBySlug);
   fastify.get("/:id", getProjectsById);
   fastify.post(
     "/",

@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import {
   getEventsList,
   getEventsById,
+  getEventsBySlug,
   createEvents,
   updateEvents,
   deleteEvents,
@@ -10,6 +11,7 @@ import { CreateEventsBody, UpdateEventsBody } from "../schemaValidation/events.s
 
 export default async function eventsRoutes(fastify: FastifyInstance) {
   fastify.get("/", getEventsList);
+  fastify.get("/slug/:slug", getEventsBySlug);
   fastify.get("/:id", getEventsById);
   fastify.post(
     "/",
