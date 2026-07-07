@@ -1,12 +1,6 @@
 import { z } from "zod";
 
-export const productCategorySchema = z.enum([
-  "Bản đồ & Nghệ thuật",
-  "Trò chơi & Giải trí",
-  "Đèn & Decor",
-  "Quà tặng Doanh nghiệp",
-  "Signage",
-]);
+export const productCategorySchema = z.string();
 
 export const productSchema = z.object({
   id: z.number().int().positive(),
@@ -16,9 +10,11 @@ export const productSchema = z.object({
   price: z.string().min(1),
   description: z.string().min(1),
   image: z.string().url(),
+  slug: z.string().optional(),
 });
 
 export const createProductSchema = productSchema.omit({ id: true });
+export const updateProductSchema = createProductSchema;
 
 export const listProductsQuerySchema = z.object({
   category: productCategorySchema.optional(),
@@ -30,4 +26,5 @@ export const productIdParamsSchema = z.object({
 
 export type Product = z.infer<typeof productSchema>;
 export type CreateProductInput = z.infer<typeof createProductSchema>;
+export type UpdateProductInput = z.infer<typeof updateProductSchema>;
 export type ListProductsQuery = z.infer<typeof listProductsQuerySchema>;

@@ -1,97 +1,196 @@
-import type { CreateProductInput, Product } from "../schemaValidation/products.schema";
+import { getPool } from "./db/pool";
+import type { CreateProductInput, UpdateProductInput } from "../schemaValidation/products.schema";
 
-const productsStore: Product[] = [
-  {
-    id: 1,
-    name: "Bản đồ gỗ UEH Mekong",
-    category: "Bản đồ & Nghệ thuật",
-    material: "Gỗ Plywood khắc laser",
-    price: "Liên hệ",
-    description: "Bản đồ vùng Mekong Delta khắc laser chi tiết. Dùng trang trí văn phòng, sảnh đón tiếp.",
-    image: "https://images.unsplash.com/photo-1619759247130-4e7a70f2fe27?w=400&h=300&fit=crop&auto=format",
-  },
-  {
-    id: 2,
-    name: "Khối gỗ 17 SDGs",
-    category: "Bản đồ & Nghệ thuật",
-    material: "Gỗ Óc Chó, sơn khắc",
-    price: "Liên hệ",
-    description: "Bộ 17 khối gỗ mô phỏng 17 Mục tiêu Phát triển Bền vững của Liên Hợp Quốc.",
-    image: "https://images.unsplash.com/photo-1631396326870-da00e37a9fc6?w=400&h=300&fit=crop&auto=format",
-  },
-  {
-    id: 3,
-    name: "Bộ cờ vua gỗ Dẻ Gai",
-    category: "Trò chơi & Giải trí",
-    material: "Gỗ Dẻ Gai nguyên khối",
-    price: "1.800.000đ",
-    description: "Cờ vua thủ công từ gỗ Dẻ Gai. Bàn cờ và quân cờ tiện/CNC chính xác.",
-    image: "https://images.unsplash.com/photo-1611117775350-ac3950990985?w=400&h=300&fit=crop&auto=format",
-  },
-  {
-    id: 4,
-    name: "Cờ vua Resin nghệ thuật",
-    category: "Trò chơi & Giải trí",
-    material: "Epoxy Resin + Gỗ Óc Chó",
-    price: "2.500.000đ",
-    description: "Bàn cờ vua đúc Resin trong suốt, kết hợp gỗ Óc Chó. Thiết kế theo yêu cầu.",
-    image: "https://images.unsplash.com/photo-1586296835409-fe3fe6b35b56?w=400&h=300&fit=crop&auto=format",
-  },
-  {
-    id: 5,
-    name: "Đèn bàn gỗ khắc laser",
-    category: "Đèn & Decor",
-    material: "Gỗ Plywood, LED ấm",
-    price: "350.000đ",
-    description: "Đèn ngủ/bàn khắc laser hoa văn tùy chọn. Ánh sáng LED ấm 3000K, dimmer.",
-    image: "https://images.unsplash.com/photo-1576595580361-90a855b84b20?w=400&h=300&fit=crop&auto=format",
-  },
-  {
-    id: 6,
-    name: "Cúp & Kỷ niệm chương",
-    category: "Quà tặng Doanh nghiệp",
-    material: "Gỗ + Kim loại mạ đồng",
-    price: "Liên hệ",
-    description: "Cúp trao giải và kỷ niệm chương theo yêu cầu. Khắc tên, logo, nội dung riêng.",
-    image: "https://images.unsplash.com/photo-1611021061285-16c871740efa?w=400&h=300&fit=crop&auto=format",
-  },
-  {
-    id: 7,
-    name: "Mô hình nhà gỗ kiến trúc",
-    category: "Quà tặng Doanh nghiệp",
-    material: "Balsa Wood, Plywood",
-    price: "Liên hệ",
-    description: "Mô hình kiến trúc tỉ lệ 1:50 đến 1:200. Phục vụ triển lãm, trình bày dự án.",
-    image: "https://images.unsplash.com/photo-1679797850019-3d0d8659a695?w=400&h=300&fit=crop&auto=format",
-  },
-  {
-    id: 8,
-    name: "Bảng Signage gỗ khắc laser",
-    category: "Signage",
-    material: "Plywood khắc laser + sơn",
-    price: "Liên hệ",
-    description: "Biển tên phòng, bảng chào, signage không gian. Thiết kế theo bộ nhận diện thương hiệu.",
-    image: "https://images.unsplash.com/photo-1615286922420-c6b348ffbd62?w=400&h=300&fit=crop&auto=format",
-  },
-];
+class ProductsModel {
+  async list(lang: string = "vi") {
+    const res = await getPool(lang).query({
+      text: `
+        SELECT i.*, c.name as category_name
+        FROM products.items i
+        LEFT JOIN products.categories c ON i.category_id = c.id
+        ORDER BY i.created_at DESC
+      `,
+    });
+    return res.rows.map(row => ({
+      id: row.id,
+      name: row.name,
+      category: row.category_name || "Khác",
+      material: row.specs?.material || "",
+      price: (row.price === null || Number(row.price) === 0) ? "Liên hệ" : Number(row.price).toLocaleString('vi-VN') + 'đ',
+      description: row.content,
+      image: row.cover_image,
+      draft: row.draft,
+    }));
+  }
 
-export const productsModel = {
-  list() {
-    return productsStore;
-  },
-  listCategories() {
-    return [...new Set(productsStore.map((product) => product.category))];
-  },
-  findById(id: number) {
-    return productsStore.find((product) => product.id === id) ?? null;
-  },
-  create(input: CreateProductInput) {
-    const nextProduct: Product = {
-      ...input,
-      id: productsStore.length + 1,
+  async listCategories(lang: string = "vi") {
+    const res = await getPool(lang).query({
+      text: `SELECT id, name, slug, draft FROM products.categories ORDER BY created_at DESC`,
+    });
+    return res.rows;
+  }
+
+  async addCategory(input: { name: string; slug?: string }, lang: string = "vi") {
+    let slug = input.slug;
+    if (!slug) {
+      slug = input.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "");
+    }
+    const res = await getPool(lang).query({
+      text: `INSERT INTO products.categories (name, slug, seo_title) VALUES ($1, $2, $3) RETURNING name`,
+      values: [input.name, slug, input.name],
+    });
+    return res.rows[0]?.name;
+  }
+
+  async updateCategory(id: number, input: { name: string; slug?: string }, lang: string = "vi") {
+    let slug = input.slug;
+    if (!slug) {
+      slug = input.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "");
+    }
+    const res = await getPool(lang).query({
+      text: `UPDATE products.categories SET name = $1, slug = $2, seo_title = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4 RETURNING id`,
+      values: [input.name, slug, input.name, id],
+    });
+    return res.rows.length > 0;
+  }
+
+  async deleteCategory(id: number, lang: string = "vi") {
+    const res = await getPool(lang).query({
+      text: `DELETE FROM products.categories WHERE id = $1 RETURNING id`,
+      values: [id],
+    });
+    return res.rows.length > 0;
+  }
+
+  async toggleCategoryDraft(id: number, draft: boolean, lang: string = "vi") {
+    const res = await getPool(lang).query({
+      text: `UPDATE products.categories SET draft = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING id`,
+      values: [draft, id],
+    });
+    return res.rows.length > 0;
+  }
+
+  async findById(id: number, lang: string = "vi") {
+    const res = await getPool(lang).query({
+      text: `
+        SELECT i.*, c.name as category_name
+        FROM products.items i
+        LEFT JOIN products.categories c ON i.category_id = c.id
+        WHERE i.id = $1
+      `,
+      values: [id],
+    });
+    const row = res.rows[0];
+    if (!row) return null;
+    return {
+      id: row.id,
+      name: row.name,
+      category: row.category_name || "Khác",
+      material: row.specs?.material || "",
+      price: (row.price === null || Number(row.price) === 0) ? "Liên hệ" : Number(row.price).toLocaleString('vi-VN') + 'đ',
+      description: row.content,
+      image: row.cover_image,
+      draft: row.draft,
     };
+  }
 
-    productsStore.push(nextProduct);
-    return nextProduct;
-  },
-};
+  async create(input: CreateProductInput, lang: string = "vi") {
+    // Look up category_id
+    let category_id = null;
+    if (input.category) {
+      const catRes = await getPool(lang).query({
+        text: `SELECT id FROM products.categories WHERE name = $1`,
+        values: [input.category],
+      });
+      if (catRes.rows.length > 0) {
+        category_id = catRes.rows[0].id;
+      }
+    }
+
+    let slug = input.slug;
+    if (!slug) {
+      slug = input.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "");
+    }
+    
+    // Attempt to parse price to numeric, if fail, keep null and rely on UI to display "Liên hệ" if price is 0
+    let numericPrice = 0;
+    try {
+      const p = parseFloat(input.price.replace(/[^\d.]/g, ""));
+      if (!isNaN(p)) numericPrice = p;
+    } catch(e) {}
+
+    const res = await getPool(lang).query({
+      text: `
+        INSERT INTO products.items (category_id, name, slug, seo_title, cover_image, description, content, price, specs)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id
+      `,
+      values: [
+        category_id,
+        input.name,
+        slug + '-' + Date.now().toString().slice(-4), // ensure uniqueness
+        input.name,
+        input.image,
+        null, // short description
+        input.description,
+        numericPrice,
+        JSON.stringify({ material: input.material }),
+      ],
+    });
+    return this.findById(res.rows[0].id, lang);
+  }
+
+  async update(id: number, input: UpdateProductInput, lang: string = "vi") {
+    let category_id = null;
+    if (input.category) {
+      const catRes = await getPool(lang).query({
+        text: `SELECT id FROM products.categories WHERE name = $1`,
+        values: [input.category],
+      });
+      if (catRes.rows.length > 0) {
+        category_id = catRes.rows[0].id;
+      }
+    }
+
+    let numericPrice = 0;
+    try {
+      const p = parseFloat(input.price.replace(/[^\d.]/g, ""));
+      if (!isNaN(p)) numericPrice = p;
+    } catch(e) {}
+
+    await getPool(lang).query({
+      text: `
+        UPDATE products.items
+        SET category_id = $1, name = $2, cover_image = $3, content = $4, price = $5, specs = $6, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $7
+      `,
+      values: [
+        category_id,
+        input.name,
+        input.image,
+        input.description,
+        numericPrice,
+        JSON.stringify({ material: input.material }),
+        id
+      ],
+    });
+    return this.findById(id, lang);
+  }
+
+  async delete(id: number, lang: string = "vi") {
+    const res = await getPool(lang).query({
+      text: `DELETE FROM products.items WHERE id = $1 RETURNING id`,
+      values: [id],
+    });
+    return res.rows.length > 0;
+  }
+
+  async toggleItemDraft(id: number, draft: boolean, lang: string = "vi") {
+    const res = await getPool(lang).query({
+      text: `UPDATE products.items SET draft = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING id`,
+      values: [draft, id],
+    });
+    return res.rows.length > 0;
+  }
+}
+
+export const productsModel = new ProductsModel();
