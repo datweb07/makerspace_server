@@ -4,7 +4,7 @@ import { CreateStaffType, UpdateStaffType } from "../schemaValidation/staff.sche
 class StaffModel {
   async getAll(lang: string = "vi") {
     return getPool(lang).query({
-      text: `SELECT * FROM people.staff ORDER BY display_order ASC, created_at DESC`,
+      text: `SELECT * FROM people.staff ORDER BY display_order ASC, id DESC`,
     });
   }
 
@@ -17,18 +17,18 @@ class StaffModel {
 
   async insert(data: CreateStaffType, lang: string = "vi") {
     return getPool(lang).query({
-      text: `INSERT INTO people.staff (id, name, title, role, bio, email, phone, cover_image, display_order) 
+      text: `INSERT INTO people.staff (id, name, title, bio, email, phone, cover_image, display_order, draft) 
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
       values: [
         data.id,
         data.name,
         data.title || null,
-        data.role || null,
         data.bio || null,
         data.email || null,
         data.phone || null,
         data.cover_image,
         data.display_order ?? 0,
+        data.draft ?? false,
       ],
     });
   }
@@ -40,7 +40,6 @@ class StaffModel {
     if (fields.length === 0) throw new Error("No data to update");
 
     let setClause = fields.map((field, index) => `"${field}" = $${index + 1}`).join(", ");
-    setClause += `, updated_at = CURRENT_TIMESTAMP`;
 
     values.push(id);
     const idIndex = values.length;

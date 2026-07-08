@@ -4,7 +4,7 @@ import { CreateInternType, UpdateInternType } from "../schemaValidation/intern.s
 class InternModel {
   async getAll(lang: string = "vi") {
     return getPool(lang).query({
-      text: `SELECT * FROM people.interns ORDER BY display_order ASC, created_at DESC`,
+      text: `SELECT * FROM people.interns ORDER BY display_order ASC, id DESC`,
     });
   }
 
@@ -17,17 +17,16 @@ class InternModel {
 
   async insert(data: CreateInternType, lang: string = "vi") {
     return getPool(lang).query({
-      text: `INSERT INTO people.interns (id, name, university, major, period, bio, cover_image, display_order) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      text: `INSERT INTO people.interns (id, name, title, bio, cover_image, display_order, draft) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
       values: [
         data.id,
         data.name,
-        data.university || null,
-        data.major || null,
-        data.period || null,
+        data.title || null,
         data.bio || null,
         data.cover_image,
         data.display_order ?? 0,
+        data.draft ?? false,
       ],
     });
   }
@@ -39,7 +38,6 @@ class InternModel {
     if (fields.length === 0) throw new Error("No data to update");
 
     let setClause = fields.map((field, index) => `"${field}" = $${index + 1}`).join(", ");
-    setClause += `, updated_at = CURRENT_TIMESTAMP`;
 
     values.push(id);
     const idIndex = values.length;
