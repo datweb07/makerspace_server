@@ -21,11 +21,13 @@ import internRoute from "./routes/intern.route";
 import userRoute from "./routes/user.route";
 import uploadRoutes from "./routes/upload.route";
 import newsRoutes from "./routes/news.route";
+import studentLifeRoutes from "./routes/student_life.route";
 import eventsRoutes from "./routes/events.route";
 import projectsRoutes from "./routes/projects.route";
 import diyRoute from "./routes/diy.route";
 import shortCoursesRoute from "./routes/short_courses.route";
 import schedulesRoute from "./routes/schedules.route";
+import careersRoute from "./routes/careers.route";
 import { DEFAULT_API_PREFIX } from "./constants";
 
 (async function main() {
@@ -115,11 +117,13 @@ import { DEFAULT_API_PREFIX } from "./constants";
   server.register(userRoute, { prefix: `${DEFAULT_API_PREFIX}/users` });
   server.register(uploadRoutes, { prefix: `${DEFAULT_API_PREFIX}/upload` });
   server.register(newsRoutes, { prefix: `${DEFAULT_API_PREFIX}/posts/news` });
+  server.register(studentLifeRoutes, { prefix: `${DEFAULT_API_PREFIX}/posts/student_life` });
   server.register(eventsRoutes, { prefix: `${DEFAULT_API_PREFIX}/posts/events` });
   server.register(projectsRoutes, { prefix: `${DEFAULT_API_PREFIX}/posts/projects` });
   server.register(diyRoute, { prefix: `${DEFAULT_API_PREFIX}/workshops/diy` });
   server.register(shortCoursesRoute, { prefix: `${DEFAULT_API_PREFIX}/workshops/short_courses` });
   server.register(schedulesRoute, { prefix: `${DEFAULT_API_PREFIX}/workshops/schedules` });
+  server.register(careersRoute, { prefix: `${DEFAULT_API_PREFIX}/posts/careers` });
   
   try {
     await server.listen({
