@@ -25,6 +25,14 @@ export const createShortCourseSchema = z.object({
   content: z.string().optional(),
   duration: z.string().optional(),
   price: z.number().nonnegative("Giá không hợp lệ").optional(),
+  location: z.string().optional(),
+  language: z.string().optional(),
+  level: z.string().optional(),
+  experience_requirements: z.string().optional(),
+  objectives: z.string().optional(),
+  structure: z.any().optional(), // JSONB
+  offer_by: z.any().optional(), // JSONB
+  summarize: z.any().optional(), // JSONB
   draft: z.boolean().optional().default(false),
 });
 
