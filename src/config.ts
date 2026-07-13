@@ -19,6 +19,7 @@ const env = {
   CORS_ORIGIN: process.env.CORS_ORIGIN ?? "http://localhost:3000",
   SERVER_PROTOCOL: process.env.SERVER_PROTOCOL ?? "http",
   SERVER_DOMAIN: process.env.SERVER_DOMAIN ?? `localhost:${process.env.PORT ?? "4000"}`,
+  MEDIA_UPLOAD_FOLDER: process.env.MEDIA_UPLOAD_FOLDER ?? "public/static",
 };
 
 export default env;

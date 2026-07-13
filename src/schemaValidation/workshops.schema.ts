@@ -4,7 +4,11 @@ import { z } from "zod";
 export const createDiySchema = z.object({
   title: z.string().min(1, "Vui lòng nhập tiêu đề"),
   slug: z.string().min(1, "Vui lòng nhập slug"),
-  cover_image: z.string().min(1, "Ảnh bìa không hợp lệ").optional().or(z.literal("")),
+  cover_image: z.string().min(1, "Ảnh bìa không hợp lệ").optional().or(z.literal("")).transform(val => {
+    if (!val) return val;
+    const match = val.match(/^https?:\/\/[^\/]+\/(public\/static\/images\/.*)$/);
+    return match ? match[1] : val;
+  }),
   description: z.string().optional(),
   content: z.string().optional(),
   duration: z.string().optional(),
@@ -20,7 +24,11 @@ export type UpdateDiyType = z.infer<typeof updateDiySchema>;
 export const createShortCourseSchema = z.object({
   title: z.string().min(1, "Vui lòng nhập tiêu đề"),
   slug: z.string().min(1, "Vui lòng nhập slug"),
-  cover_image: z.string().min(1, "Ảnh bìa không hợp lệ").optional().or(z.literal("")),
+  cover_image: z.string().min(1, "Ảnh bìa không hợp lệ").optional().or(z.literal("")).transform(val => {
+    if (!val) return val;
+    const match = val.match(/^https?:\/\/[^\/]+\/(public\/static\/images\/.*)$/);
+    return match ? match[1] : val;
+  }),
   description: z.string().optional(),
   content: z.string().optional(),
   duration: z.string().optional(),

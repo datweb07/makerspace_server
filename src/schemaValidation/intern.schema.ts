@@ -5,7 +5,11 @@ export const InternSchema = z.object({
   name: z.string().min(1, "Name is required"),
   title: z.string().nullable().optional(),
   bio: z.string().nullable().optional(),
-  cover_image: z.string().min(1, "Cover image is required"),
+  cover_image: z.string().min(1, "Cover image is required").transform(val => {
+    if (!val) return val;
+    const match = val.match(/^https?:\/\/[^\/]+\/(public\/static\/images\/.*)$/);
+    return match ? match[1] : val;
+  }),
   display_order: z.number().int().optional().default(0),
   draft: z.boolean().optional().default(false),
 });
@@ -17,7 +21,11 @@ export const CreateInternBody = z.object({
   name: z.string().min(1, "Name is required"),
   title: z.string().nullable().optional(),
   bio: z.string().nullable().optional(),
-  cover_image: z.string().min(1, "Cover image is required"),
+  cover_image: z.string().min(1, "Cover image is required").transform(val => {
+    if (!val) return val;
+    const match = val.match(/^https?:\/\/[^\/]+\/(public\/static\/images\/.*)$/);
+    return match ? match[1] : val;
+  }),
   display_order: z.number().int().optional().default(0),
   draft: z.boolean().optional().default(false),
 });
@@ -28,7 +36,11 @@ export const UpdateInternBody = z.object({
   name: z.string().min(1, "Name is required").optional(),
   title: z.string().nullable().optional(),
   bio: z.string().nullable().optional(),
-  cover_image: z.string().min(1, "Cover image is required").optional(),
+  cover_image: z.string().min(1, "Cover image is required").optional().transform(val => {
+    if (!val) return val;
+    const match = val.match(/^https?:\/\/[^\/]+\/(public\/static\/images\/.*)$/);
+    return match ? match[1] : val;
+  }),
   display_order: z.number().int().optional(),
   draft: z.boolean().optional(),
 });

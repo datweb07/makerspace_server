@@ -7,7 +7,11 @@ export const TechnicalsSchema = z.object({
   bio: z.string().nullable().optional(),
   email: z.string().email().nullable().optional(),
   phone: z.string().nullable().optional(),
-  cover_image: z.string().min(1, "Cover image is required"),
+  cover_image: z.string().min(1, "Cover image is required").transform(val => {
+    if (!val) return val;
+    const match = val.match(/^https?:\/\/[^\/]+\/(public\/static\/images\/.*)$/);
+    return match ? match[1] : val;
+  }),
   display_order: z.number().int().optional().default(0),
   draft: z.boolean().optional().default(false),
 });
@@ -21,7 +25,11 @@ export const CreateTechnicalsBody = z.object({
   bio: z.string().nullable().optional(),
   email: z.string().email("Invalid email").nullable().optional().or(z.literal("")),
   phone: z.string().nullable().optional(),
-  cover_image: z.string().min(1, "Cover image is required"),
+  cover_image: z.string().min(1, "Cover image is required").transform(val => {
+    if (!val) return val;
+    const match = val.match(/^https?:\/\/[^\/]+\/(public\/static\/images\/.*)$/);
+    return match ? match[1] : val;
+  }),
   display_order: z.number().int().optional().default(0),
   draft: z.boolean().optional().default(false),
 });
@@ -34,7 +42,11 @@ export const UpdateTechnicalsBody = z.object({
   bio: z.string().nullable().optional(),
   email: z.string().email("Invalid email").nullable().optional().or(z.literal("")),
   phone: z.string().nullable().optional(),
-  cover_image: z.string().min(1, "Cover image is required").optional(),
+  cover_image: z.string().min(1, "Cover image is required").optional().transform(val => {
+    if (!val) return val;
+    const match = val.match(/^https?:\/\/[^\/]+\/(public\/static\/images\/.*)$/);
+    return match ? match[1] : val;
+  }),
   display_order: z.number().int().optional(),
   draft: z.boolean().optional(),
 });
