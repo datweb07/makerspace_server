@@ -1,15 +1,14 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import staffModel from "../models/staff.model";
 import { CreateStaffType, UpdateStaffType } from "../schemaValidation/staff.schema";
-import { formatImageUrl } from "../utils/formatImageUrl";
 
 export const getStaffList = async (req: FastifyRequest, reply: FastifyReply) => {
   try {
     const result = await staffModel.getAll(req.lang);
     const formattedData = result.rows.map(item => ({
       ...item,
-      image: formatImageUrl(item.cover_image), // Keep image alias if frontend expects it
-      cover_image: formatImageUrl(item.cover_image)
+      image: item.cover_image, // Keep image alias if frontend expects it
+      cover_image: item.cover_image
     }));
     reply.send({ data: formattedData });
   } catch (error) {
@@ -28,8 +27,8 @@ export const getStaffById = async (
       return reply.status(404).send({ message: "Staff not found" });
     }
     const staff = result.rows[0];
-    staff.image = formatImageUrl(staff.cover_image);
-    staff.cover_image = formatImageUrl(staff.cover_image);
+    staff.image = staff.cover_image;
+    staff.cover_image = staff.cover_image;
     reply.send({ data: staff });
   } catch (error) {
     console.error(error);
@@ -44,8 +43,8 @@ export const createStaff = async (
   try {
     const result = await staffModel.insert(req.body, req.lang);
     const staff = result.rows[0];
-    staff.image = formatImageUrl(staff.cover_image);
-    staff.cover_image = formatImageUrl(staff.cover_image);
+    staff.image = staff.cover_image;
+    staff.cover_image = staff.cover_image;
     reply.send({ message: "Created successfully", data: staff });
   } catch (error) {
     console.error(error);
@@ -63,8 +62,8 @@ export const updateStaff = async (
       return reply.status(404).send({ message: "Staff not found" });
     }
     const staff = result.rows[0];
-    staff.image = formatImageUrl(staff.cover_image);
-    staff.cover_image = formatImageUrl(staff.cover_image);
+    staff.image = staff.cover_image;
+    staff.cover_image = staff.cover_image;
     reply.send({ message: "Updated successfully", data: staff });
   } catch (error) {
     console.error(error);

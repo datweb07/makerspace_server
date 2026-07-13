@@ -1,15 +1,14 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import technicalsModel from "../models/technicals.model";
 import { CreateTechnicalsType, UpdateTechnicalsType } from "../schemaValidation/technicals.schema";
-import { formatImageUrl } from "../utils/formatImageUrl";
 
 export const getTechnicalsList = async (req: FastifyRequest, reply: FastifyReply) => {
   try {
     const result = await technicalsModel.getAll(req.lang);
     const formattedData = result.rows.map(item => ({
       ...item,
-      image: formatImageUrl(item.cover_image), // Keep image alias if frontend expects it
-      cover_image: formatImageUrl(item.cover_image)
+      image: item.cover_image, // Keep image alias if frontend expects it
+      cover_image: item.cover_image
     }));
     reply.send({ data: formattedData });
   } catch (error) {
@@ -28,8 +27,8 @@ export const getTechnicalsById = async (
       return reply.status(404).send({ message: "Technicals not found" });
     }
     const technicals = result.rows[0];
-    technicals.image = formatImageUrl(technicals.cover_image);
-    technicals.cover_image = formatImageUrl(technicals.cover_image);
+    technicals.image = technicals.cover_image;
+    technicals.cover_image = technicals.cover_image;
     reply.send({ data: technicals });
   } catch (error) {
     console.error(error);
@@ -44,8 +43,8 @@ export const createTechnicals = async (
   try {
     const result = await technicalsModel.insert(req.body, req.lang);
     const technicals = result.rows[0];
-    technicals.image = formatImageUrl(technicals.cover_image);
-    technicals.cover_image = formatImageUrl(technicals.cover_image);
+    technicals.image = technicals.cover_image;
+    technicals.cover_image = technicals.cover_image;
     reply.send({ message: "Created successfully", data: technicals });
   } catch (error) {
     console.error(error);
@@ -63,8 +62,8 @@ export const updateTechnicals = async (
       return reply.status(404).send({ message: "Technicals not found" });
     }
     const technicals = result.rows[0];
-    technicals.image = formatImageUrl(technicals.cover_image);
-    technicals.cover_image = formatImageUrl(technicals.cover_image);
+    technicals.image = technicals.cover_image;
+    technicals.cover_image = technicals.cover_image;
     reply.send({ message: "Updated successfully", data: technicals });
   } catch (error) {
     console.error(error);

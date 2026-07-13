@@ -1,14 +1,13 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import eventsModel from "../models/events.model";
 import { CreateEventsType, UpdateEventsType } from "../schemaValidation/events.schema";
-import { formatImageUrl } from "../utils/formatImageUrl";
 
 export const getEventsList = async (req: FastifyRequest, reply: FastifyReply) => {
   try {
     const result = await eventsModel.getAll(req.lang);
     const formattedData = result.rows.map(item => ({
       ...item,
-      cover_image: formatImageUrl(item.cover_image)
+      cover_image: item.cover_image
     }));
     reply.send({ data: formattedData });
   } catch (error) {
@@ -27,7 +26,7 @@ export const getEventsById = async (
       return reply.status(404).send({ message: "Not found" });
     }
     const item = result.rows[0];
-    item.cover_image = formatImageUrl(item.cover_image);
+    item.cover_image = item.cover_image;
     reply.send({ data: item });
   } catch (error) {
     console.error(error);
@@ -45,7 +44,7 @@ export const getEventsBySlug = async (
       return reply.status(404).send({ message: "Not found" });
     }
     const item = result.rows[0];
-    item.cover_image = formatImageUrl(item.cover_image);
+    item.cover_image = item.cover_image;
     reply.send({ data: item });
   } catch (error) {
     console.error(error);
@@ -60,7 +59,7 @@ export const createEvents = async (
   try {
     const result = await eventsModel.insert(req.body, req.lang);
     const item = result.rows[0];
-    item.cover_image = formatImageUrl(item.cover_image);
+    item.cover_image = item.cover_image;
     reply.send({ message: "Created successfully", data: item });
   } catch (error: any) {
     console.error(error);
@@ -81,7 +80,7 @@ export const updateEvents = async (
       return reply.status(404).send({ message: "Not found" });
     }
     const item = result.rows[0];
-    item.cover_image = formatImageUrl(item.cover_image);
+    item.cover_image = item.cover_image;
     reply.send({ message: "Updated successfully", data: item });
   } catch (error: any) {
     console.error(error);

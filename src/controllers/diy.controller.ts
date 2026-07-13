@@ -1,14 +1,13 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import diyModel from "../models/diy.model";
 import { CreateDiyType, UpdateDiyType } from "../schemaValidation/workshops.schema";
-import { formatImageUrl } from "../utils/formatImageUrl";
 
 export const getDiyList = async (req: FastifyRequest, reply: FastifyReply) => {
   try {
     const result = await diyModel.getAll(req.lang);
     const formattedData = result.rows.map(item => ({
       ...item,
-      cover_image: item.cover_image ? formatImageUrl(item.cover_image) : null
+      cover_image: item.cover_image ? item.cover_image : null
     }));
     reply.send({ data: formattedData });
   } catch (error) {
@@ -27,7 +26,7 @@ export const getDiyById = async (
       return reply.status(404).send({ message: "Not found" });
     }
     const item = result.rows[0];
-    if (item.cover_image) item.cover_image = formatImageUrl(item.cover_image);
+    if (item.cover_image) item.cover_image = item.cover_image;
     reply.send({ data: item });
   } catch (error) {
     console.error(error);
@@ -45,7 +44,7 @@ export const getDiyBySlug = async (
       return reply.status(404).send({ message: "Not found" });
     }
     const item = result.rows[0];
-    if (item.cover_image) item.cover_image = formatImageUrl(item.cover_image);
+    if (item.cover_image) item.cover_image = item.cover_image;
     reply.send({ data: item });
   } catch (error) {
     console.error(error);
@@ -60,7 +59,7 @@ export const createDiy = async (
   try {
     const result = await diyModel.insert(req.body, req.lang);
     const item = result.rows[0];
-    if (item.cover_image) item.cover_image = formatImageUrl(item.cover_image);
+    if (item.cover_image) item.cover_image = item.cover_image;
     reply.send({ message: "Created successfully", data: item });
   } catch (error: any) {
     console.error(error);
@@ -81,7 +80,7 @@ export const updateDiy = async (
       return reply.status(404).send({ message: "Not found" });
     }
     const item = result.rows[0];
-    if (item.cover_image) item.cover_image = formatImageUrl(item.cover_image);
+    if (item.cover_image) item.cover_image = item.cover_image;
     reply.send({ message: "Updated successfully", data: item });
   } catch (error: any) {
     console.error(error);

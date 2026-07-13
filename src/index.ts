@@ -107,6 +107,18 @@ import { DEFAULT_API_PREFIX } from "./constants";
   }));
 
 
+  server.addHook("onSend", (request, reply, payload: any, done) => {
+    if (typeof payload === "string" && payload.includes('"public/static/images/')) {
+      const newPayload = payload.replace(
+        /"public\/static\/images\//g,
+        `"${envConfig.SERVER_PROTOCOL}://${envConfig.SERVER_DOMAIN}/public/static/images/`
+      );
+      done(null, newPayload);
+    } else {
+      done(null, payload);
+    }
+  });
+
   server.register(utilsRoute, { prefix: `${DEFAULT_API_PREFIX}/utils` });
   server.register(productsRoute, { prefix: `${DEFAULT_API_PREFIX}/products` });
   server.register(workshopsRoute, { prefix: `${DEFAULT_API_PREFIX}/workshops` });

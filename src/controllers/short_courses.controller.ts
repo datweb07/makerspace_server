@@ -1,14 +1,13 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import shortCoursesModel from "../models/short_courses.model";
 import { CreateShortCourseType, UpdateShortCourseType } from "../schemaValidation/workshops.schema";
-import { formatImageUrl } from "../utils/formatImageUrl";
 
 export const getShortCoursesList = async (req: FastifyRequest, reply: FastifyReply) => {
   try {
     const result = await shortCoursesModel.getAll(req.lang);
     const formattedData = result.rows.map(item => ({
       ...item,
-      cover_image: item.cover_image ? formatImageUrl(item.cover_image) : null
+      cover_image: item.cover_image ? item.cover_image : null
     }));
     reply.send({ data: formattedData });
   } catch (error) {
@@ -27,7 +26,7 @@ export const getShortCourseById = async (
       return reply.status(404).send({ message: "Not found" });
     }
     const item = result.rows[0];
-    if (item.cover_image) item.cover_image = formatImageUrl(item.cover_image);
+    if (item.cover_image) item.cover_image = item.cover_image;
     reply.send({ data: item });
   } catch (error) {
     console.error(error);
@@ -45,7 +44,7 @@ export const getShortCourseBySlug = async (
       return reply.status(404).send({ message: "Not found" });
     }
     const item = result.rows[0];
-    if (item.cover_image) item.cover_image = formatImageUrl(item.cover_image);
+    if (item.cover_image) item.cover_image = item.cover_image;
     reply.send({ data: item });
   } catch (error) {
     console.error(error);
@@ -60,7 +59,7 @@ export const createShortCourse = async (
   try {
     const result = await shortCoursesModel.insert(req.body, req.lang);
     const item = result.rows[0];
-    if (item.cover_image) item.cover_image = formatImageUrl(item.cover_image);
+    if (item.cover_image) item.cover_image = item.cover_image;
     reply.send({ message: "Created successfully", data: item });
   } catch (error: any) {
     console.error(error);
@@ -81,7 +80,7 @@ export const updateShortCourse = async (
       return reply.status(404).send({ message: "Not found" });
     }
     const item = result.rows[0];
-    if (item.cover_image) item.cover_image = formatImageUrl(item.cover_image);
+    if (item.cover_image) item.cover_image = item.cover_image;
     reply.send({ message: "Updated successfully", data: item });
   } catch (error: any) {
     console.error(error);

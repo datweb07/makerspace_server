@@ -1,15 +1,14 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import internModel from "../models/intern.model";
 import { CreateInternType, UpdateInternType } from "../schemaValidation/intern.schema";
-import { formatImageUrl } from "../utils/formatImageUrl";
 
 export const getInternList = async (req: FastifyRequest, reply: FastifyReply) => {
   try {
     const result = await internModel.getAll(req.lang);
     const formattedData = result.rows.map(item => ({
       ...item,
-      image: formatImageUrl(item.cover_image), // Keep image alias if frontend expects it
-      cover_image: formatImageUrl(item.cover_image)
+      image: item.cover_image, // Keep image alias if frontend expects it
+      cover_image: item.cover_image
     }));
     reply.send({ data: formattedData });
   } catch (error) {
@@ -28,8 +27,8 @@ export const getInternById = async (
       return reply.status(404).send({ message: "Intern not found" });
     }
     const intern = result.rows[0];
-    intern.image = formatImageUrl(intern.cover_image);
-    intern.cover_image = formatImageUrl(intern.cover_image);
+    intern.image = intern.cover_image;
+    intern.cover_image = intern.cover_image;
     reply.send({ data: intern });
   } catch (error) {
     console.error(error);
@@ -44,8 +43,8 @@ export const createIntern = async (
   try {
     const result = await internModel.insert(req.body, req.lang);
     const intern = result.rows[0];
-    intern.image = formatImageUrl(intern.cover_image);
-    intern.cover_image = formatImageUrl(intern.cover_image);
+    intern.image = intern.cover_image;
+    intern.cover_image = intern.cover_image;
     reply.send({ message: "Created successfully", data: intern });
   } catch (error) {
     console.error(error);
@@ -63,8 +62,8 @@ export const updateIntern = async (
       return reply.status(404).send({ message: "Intern not found" });
     }
     const intern = result.rows[0];
-    intern.image = formatImageUrl(intern.cover_image);
-    intern.cover_image = formatImageUrl(intern.cover_image);
+    intern.image = intern.cover_image;
+    intern.cover_image = intern.cover_image;
     reply.send({ message: "Updated successfully", data: intern });
   } catch (error) {
     console.error(error);
