@@ -24,12 +24,12 @@ class EventsModel {
 
   async insert(data: CreateEventsType, lang: string = "vi") {
     return getPool(lang).query({
-      text: `INSERT INTO posts.events (title, slug, seo_title, cover_image, description, content, author, publish_date, draft, event_time) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+      text: `INSERT INTO posts.events (title, slug, cover_image, description, content, author, publish_date, draft, event_time) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
       values: [
         data.title,
         data.slug,
-        data.seo_title,
+
         data.cover_image,
         data.description || null,
         data.content,

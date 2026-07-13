@@ -24,12 +24,12 @@ class StudentLifeModel {
 
   async insert(data: CreateStudentLifeType, lang: string = "vi") {
     return getPool(lang).query({
-      text: `INSERT INTO posts.student_life (title, slug, seo_title, cover_image, description, content, author, publish_date, draft) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      text: `INSERT INTO posts.student_life (title, slug, cover_image, description, content, author, publish_date, draft) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
       values: [
         data.title,
         data.slug,
-        data.seo_title,
+
         data.cover_image,
         data.description || null,
         data.content,

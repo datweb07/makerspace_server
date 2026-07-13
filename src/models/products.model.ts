@@ -36,8 +36,8 @@ class ProductsModel {
       slug = input.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "");
     }
     const res = await getPool(lang).query({
-      text: `INSERT INTO products.categories (name, slug, seo_title) VALUES ($1, $2, $3) RETURNING name`,
-      values: [input.name, slug, input.name],
+      text: `INSERT INTO products.categories (name, slug) VALUES ($1, $2) RETURNING name`,
+      values: [input.name, slug],
     });
     return res.rows[0]?.name;
   }
@@ -48,8 +48,8 @@ class ProductsModel {
       slug = input.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "");
     }
     const res = await getPool(lang).query({
-      text: `UPDATE products.categories SET name = $1, slug = $2, seo_title = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4 RETURNING id`,
-      values: [input.name, slug, input.name, id],
+      text: `UPDATE products.categories SET name = $1, slug = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING id`,
+      values: [input.name, slug, id],
     });
     return res.rows.length > 0;
   }
@@ -121,14 +121,13 @@ class ProductsModel {
 
     const res = await getPool(lang).query({
       text: `
-        INSERT INTO products.items (category_id, name, slug, seo_title, cover_image, description, content, price, specs)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id
+        INSERT INTO products.items (category_id, name, slug, cover_image, description, content, price, specs)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id
       `,
       values: [
         category_id,
         input.name,
         slug + '-' + Date.now().toString().slice(-4), // ensure uniqueness
-        input.name,
         input.image,
         null, // short description
         input.description,

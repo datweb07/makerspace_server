@@ -4,7 +4,6 @@ export const StudentLifeSchema = z.object({
   id: z.string().or(z.number()).optional(),
   title: z.string().min(1, "Title is required"),
   slug: z.string().min(1, "Slug is required"),
-  seo_title: z.string().min(1, "SEO Title is required"),
   cover_image: z.string().min(1, "Cover image is required").transform(val => {
     if (!val) return val;
     const match = val.match(/^https?:\/\/[^\/]+\/(public\/static\/images\/.*)$/);
@@ -24,7 +23,6 @@ export type StudentLifeType = z.TypeOf<typeof StudentLifeSchema>;
 export const CreateStudentLifeBody = z.object({
   title: z.string().min(1, "Title is required"),
   slug: z.string().min(1, "Slug is required"),
-  seo_title: z.string().min(1, "SEO Title is required"),
   cover_image: z.string().min(1, "Cover image is required").transform(val => {
     if (!val) return val;
     const match = val.match(/^https?:\/\/[^\/]+\/(public\/static\/images\/.*)$/);
