@@ -83,7 +83,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
-          server-dir: ${{ secrets.MAKER_API_APP_PATH }} # Ví dụ: /public_html/api/ hoặc thư mục chứa API
+          server-dir: ${{ secrets.MAKER_API_APP_PATH }}/ # Ví dụ: /public_html/api/ hoặc thư mục chứa API
           state-name: .ftp-deploy-sync-state.json
           exclude: |
             **/*
