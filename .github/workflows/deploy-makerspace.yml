@@ -51,20 +51,20 @@ jobs:
       - name: Build API
         run: ${{ steps.detect-package-manager.outputs.manager }} run build
 
+      # Đóng gói trực tiếp thành file deploy.zip
+      - name: Create Zip Package
+        run: |
+          zip -r deploy.zip dist public package.json package-lock.json
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: makerspace-api-build
-          include-hidden-files: true
-          path: |
-            dist
-            public
-            package.json
-            package-lock.json
+          name: makerspace-api-zip
+          path: deploy.zip
           retention-days: 1
 
   deploy:
-    name: Deploy to cPanel Shared Hosting
+    name: Deploy to cPanel via FTP & Webhook
     runs-on: ubuntu-latest
     needs: build
 
@@ -72,53 +72,24 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: makerspace-api-build
+          name: makerspace-api-zip
           path: ./
 
-      - name: Pack build artifact
+      # Upload duy nhất file deploy.zip qua FTP
+      - name: Sync Zip via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./
+          server-dir: ${{ secrets.MAKER_API_APP_PATH }} # Ví dụ: /public_html/api/ hoặc thư mục chứa API
+          state-name: .ftp-deploy-sync-state.json
+          exclude: |
+            **/*
+            !deploy.zip
+
+      # Gọi Webhook giải nén và restart Node.js server
+      - name: Trigger Remote Unzip Webhook
         run: |
-          tar -czf deploy.tar.gz \
-            dist \
-            public \
-            package.json \
-            package-lock.json
-
-      - name: Upload package via SCP
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          port: ${{ secrets.SSH_PORT }}
-          source: "deploy.tar.gz"
-          # Ensure MAKER_API_APP_PATH points to: /home/iscmapi/server/makerspace
-          target: ${{ secrets.MAKER_API_APP_PATH }}
-
-      - name: Extract package, install dependencies and restart app
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            source ${{ secrets.NODE_PATH }}
-            cd ${{ secrets.MAKER_API_APP_PATH }}
-
-            # Remove old build files
-            rm -rf dist public
-            rm -f package.json package-lock.json
-
-            # Extract new build
-            tar -xzf deploy.tar.gz
-            rm -f deploy.tar.gz
-
-            # Install production dependencies
-            npm ci --omit=dev
-
-            # Restart application via Phusion Passenger (cPanel)
-            echo "Restarting Makerspace API Node.js application..."
-            mkdir -p tmp
-            touch tmp/restart.txt
+          curl -s "https://iscm-api.ueh.edu.vn/makerspace_server/unzip.php?key=makerspace2026"
