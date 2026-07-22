@@ -92,4 +92,4 @@ jobs:
       # Gọi Webhook giải nén và restart Node.js server
       - name: Trigger Remote Unzip Webhook
         run: |
-          curl -s "https://iscm-api.ueh.edu.vn/makerspace_server/unzip.php?key=makerspace2026"
+          curl -s "https://iscm-api.ueh.edu.vn/unzip.php?key=makerspace2026"
