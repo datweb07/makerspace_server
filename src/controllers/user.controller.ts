@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import bcrypt from "bcrypt";
 import { AccountModel } from "../models/account.model";
 import { signSessionToken, verifySessionToken } from "../utils/jwt";
-import { LoginBodyType } from "../schemaValidation/auth.schema";
+import { LoginBodyType, RegisterBodyType } from "../schemaValidation/auth.schema";
 import { sendVerificationEmail } from "../utils/mail";
 
 export async function loginUser(
@@ -34,25 +34,32 @@ export async function loginUser(
         data: { token, expires },
       });
     } else {
-      // Guest Login (Username / Password)
+      // Guest & Admin Login (Username / Password)
       if (!password) {
         return reply.status(400).send({ message: "Vui lòng nhập mật khẩu" });
       }
 
-      const guest = await accountModel.findGuestByUsername(username, request.lang);
-      if (!guest) {
+      // Admin (member) might log in using password, so check members table first
+      let account = await accountModel.findMemberByEmail(username, request.lang);
+
+      // If not found in members, check guests table
+      if (!account) {
+        account = await accountModel.findGuestByUsername(username, request.lang);
+      }
+
+      if (!account) {
         return reply.status(404).send({ message: "Tài khoản không tồn tại" });
       }
 
-      const isMatch = await bcrypt.compare(password, guest.password);
+      const isMatch = await bcrypt.compare(password, account.password);
       if (!isMatch) {
         return reply.status(401).send({ message: "Mật khẩu không đúng" });
       }
 
       const tokenPayload = {
-        userId: guest.id,
-        username: guest.username,
-        role: guest.role || "guest",
+        userId: account.id,
+        username: account.username,
+        role: account.role || "guest",
       };
 
       const token = signSessionToken(tokenPayload);
@@ -70,7 +77,7 @@ export async function loginUser(
 }
 
 export async function registerGuest(
-  request: FastifyRequest<{ Body: LoginBodyType }>,
+  request: FastifyRequest<{ Body: RegisterBodyType }>,
   reply: FastifyReply
 ) {
   try {

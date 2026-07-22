@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { loginUser, registerGuest, verifyGuest } from "../controllers/user.controller";
-import { LoginBody, LoginBodyType, LoginRes, LoginResType } from "../schemaValidation/auth.schema";
+import { LoginBody, LoginBodyType, RegisterBody, RegisterBodyType, LoginRes, LoginResType } from "../schemaValidation/auth.schema";
 import { verifySessionToken } from "../utils/jwt";
 import z from "zod";
 
@@ -23,12 +23,12 @@ async function usersRoute(server: FastifyInstance) {
 
   server.post<{
     Reply: { 201: { message: string }; 400: { message: string }; 409: { message: string }; 500: { message: string } };
-    Body: LoginBodyType;
+    Body: RegisterBodyType;
   }>(
     "/register",
     {
       schema: {
-        body: LoginBody,
+        body: RegisterBody,
       },
     },
     registerGuest
