@@ -10,8 +10,9 @@ export const UserSchema = z.object({
 export type UserType = z.TypeOf<typeof UserSchema>;
 
 export const LoginBody = z.object({
-  username: z.string().min(3),
-  password: z.string().min(6),
+  username: z.string().email("Email không hợp lệ").min(3, "Tên đăng nhập ít nhất 3 ký tự"),
+  password: z.string().optional(),
+  auth_provider: z.string().optional(),
 });
 export type LoginBodyType = z.TypeOf<typeof LoginBody>;
 

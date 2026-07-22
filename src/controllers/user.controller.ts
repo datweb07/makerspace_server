@@ -1,60 +1,142 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import bcrypt from "bcrypt";
-import { UserModel } from "../models/user.model";
-import { signSessionToken } from "../utils/jwt";
+import { AccountModel } from "../models/account.model";
+import { signSessionToken, verifySessionToken } from "../utils/jwt";
 import { LoginBodyType } from "../schemaValidation/auth.schema";
+import { sendVerificationEmail } from "../utils/mail";
 
 export async function loginUser(
   request: FastifyRequest<{ Body: LoginBodyType }>,
   reply: FastifyReply
 ) {
   try {
+    const { username, password, auth_provider } = request.body;
+    const accountModel = new AccountModel();
+
+    if (auth_provider === "google") {
+      // Member Login (Google Whitelist)
+      const member = await accountModel.findMemberByEmail(username, request.lang);
+      if (!member) {
+        return reply.status(404).send({ message: "Email chưa được cấp quyền truy cập." });
+      }
+
+      const tokenPayload = {
+        userId: member.id,
+        username: member.username,
+        role: member.role || "member",
+      };
+
+      const token = signSessionToken(tokenPayload);
+      const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+      return reply.status(200).send({
+        message: "Đăng nhập thành công",
+        data: { token, expires },
+      });
+    } else {
+      // Guest Login (Username / Password)
+      if (!password) {
+        return reply.status(400).send({ message: "Vui lòng nhập mật khẩu" });
+      }
+
+      const guest = await accountModel.findGuestByUsername(username, request.lang);
+      if (!guest) {
+        return reply.status(404).send({ message: "Tài khoản không tồn tại" });
+      }
+
+      const isMatch = await bcrypt.compare(password, guest.password);
+      if (!isMatch) {
+        return reply.status(401).send({ message: "Mật khẩu không đúng" });
+      }
+
+      const tokenPayload = {
+        userId: guest.id,
+        username: guest.username,
+        role: guest.role || "guest",
+      };
+
+      const token = signSessionToken(tokenPayload);
+      const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+      return reply.status(200).send({
+        message: "Đăng nhập thành công",
+        data: { token, expires },
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return reply.status(500).send({ message: "Internal server error" });
+  }
+}
+
+export async function registerGuest(
+  request: FastifyRequest<{ Body: LoginBodyType }>,
+  reply: FastifyReply
+) {
+  try {
     const { username, password } = request.body;
-    
-    // Hardcode an initialization for the "admin" account if it doesn't exist
-    // so the user can login immediately.
-    const userModel = new UserModel();
-    
-    let user = await userModel.findUserByUsername(username, request.lang);
-    
-    if (!user && username === "admin") {
-      // Seed default admin
-      const hashed = await bcrypt.hash("123456", 10);
-      user = await userModel.createAdminUser(hashed, request.lang);
+    if (!password) {
+      return reply.status(400).send({ message: "Vui lòng nhập mật khẩu" });
     }
 
-    if (!user) {
-      return reply.status(404).send({ message: "User not found" });
+    const accountModel = new AccountModel();
+
+    // Check if exists in either guests or members concurrently to optimize performance
+    const [existingGuest, existingMember] = await Promise.all([
+      accountModel.findGuestByUsername(username, request.lang),
+      accountModel.findMemberByEmail(username, request.lang)
+    ]);
+
+    if (existingGuest || existingMember) {
+      return reply.status(409).send({ message: "Email này đã được đăng ký" });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return reply.status(401).send({ message: "Invalid password" });
-    }
+    const passwordHash = await bcrypt.hash(password, 10);
 
-    if (user.status !== "active") {
-      return reply.status(403).send({ message: "Account is disabled" });
-    }
+    // JWT contains username and passwordHash (which is secure enough for short-lived token)
+    const tokenPayload = { username, passwordHash };
+    const verifyToken = signSessionToken(tokenPayload); // Reuse for signing
 
-    const tokenPayload = {
-      userId: user.id,
-      username: user.username,
-      role: user.role,
-    };
+    await sendVerificationEmail(username, verifyToken);
 
-    const token = signSessionToken(tokenPayload);
-    // 7 days from now
-    const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-
-    return reply.status(200).send({
-      message: "Login successful",
-      data: {
-        token,
-        expires,
-      },
+    return reply.status(201).send({
+      message: "Vui lòng kiểm tra email để kích hoạt tài khoản",
     });
   } catch (error) {
     console.error(error);
     return reply.status(500).send({ message: "Internal server error" });
   }
 }
+
+export async function verifyGuest(
+  request: FastifyRequest<{ Body: { token: string } }>,
+  reply: FastifyReply
+) {
+  try {
+    const { token } = request.body;
+    if (!token) {
+      return reply.status(400).send({ message: "Token is required" });
+    }
+
+    const decoded = verifySessionToken(token) as any;
+    if (!decoded || !decoded.username || !decoded.passwordHash) {
+      return reply.status(400).send({ message: "Token không hợp lệ hoặc đã hết hạn" });
+    }
+
+    const accountModel = new AccountModel();
+    const existingGuest = await accountModel.findGuestByUsername(decoded.username, request.lang);
+    if (existingGuest) {
+      return reply.status(409).send({ message: "Tài khoản đã được kích hoạt trước đó" });
+    }
+
+    await accountModel.insertGuest(decoded.username, decoded.passwordHash, request.lang);
+
+    return reply.status(200).send({
+      message: "Kích hoạt tài khoản thành công! Bạn có thể đăng nhập.",
+    });
+  } catch (error) {
+    console.error(error);
+    return reply.status(500).send({ message: "Internal server error" });
+  }
+}
+

@@ -19,7 +19,12 @@ const env = {
   CORS_ORIGIN: process.env.CORS_ORIGIN ?? "http://localhost:3000",
   SERVER_PROTOCOL: process.env.SERVER_PROTOCOL ?? "http",
   SERVER_DOMAIN: process.env.SERVER_DOMAIN ?? `localhost:${process.env.PORT ?? "4000"}`,
-  MEDIA_UPLOAD_FOLDER: process.env.MEDIA_UPLOAD_FOLDER ?? "public/static",
+  EMAIL_APP_USERNAME: process.env.EMAIL_APP_USERNAME ?? "",
+  EMAIL_APP_PASS: process.env.EMAIL_APP_PASS ?? "",
+  GOOGLE_SERVICE_ACCOUNT_EMAIL: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ?? "",
+  GOOGLE_PRIVATE_KEY: process.env.GOOGLE_PRIVATE_KEY ?? "",
+  GOOGLE_SHEET_ID: process.env.GOOGLE_SHEET_ID ?? "",
+  MEDIA_UPLOAD_FOLDER: process.env.MEDIA_UPLOAD_FOLDER ?? "uploads",
 };
 
 export default env;

@@ -1,7 +1,8 @@
 import { FastifyInstance } from "fastify";
-import { loginUser } from "../controllers/user.controller";
+import { loginUser, registerGuest, verifyGuest } from "../controllers/user.controller";
 import { LoginBody, LoginBodyType, LoginRes, LoginResType } from "../schemaValidation/auth.schema";
 import { verifySessionToken } from "../utils/jwt";
+import z from "zod";
 
 async function usersRoute(server: FastifyInstance) {
   server.post<{
@@ -18,6 +19,29 @@ async function usersRoute(server: FastifyInstance) {
       },
     },
     loginUser
+  );
+
+  server.post<{
+    Reply: { 201: { message: string }; 400: { message: string }; 409: { message: string }; 500: { message: string } };
+    Body: LoginBodyType;
+  }>(
+    "/register",
+    {
+      schema: {
+        body: LoginBody,
+      },
+    },
+    registerGuest
+  );
+
+  server.post(
+    "/verify",
+    {
+      schema: {
+        body: z.object({ token: z.string() }),
+      },
+    },
+    verifyGuest
   );
 
   server.post("/checked-valid-session", async (request, reply) => {
