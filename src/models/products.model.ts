@@ -19,6 +19,7 @@ class ProductsModel {
       price: (row.price === null || Number(row.price) === 0) ? "Liên hệ" : Number(row.price).toLocaleString('vi-VN') + 'đ',
       description: row.content,
       image: row.cover_image,
+      images: row.specs?.images || [],
       draft: row.draft,
     }));
   }
@@ -90,6 +91,7 @@ class ProductsModel {
       price: (row.price === null || Number(row.price) === 0) ? "Liên hệ" : Number(row.price).toLocaleString('vi-VN') + 'đ',
       description: row.content,
       image: row.cover_image,
+      images: row.specs?.images || [],
       draft: row.draft,
     };
   }
@@ -132,7 +134,7 @@ class ProductsModel {
         null, // short description
         input.description,
         numericPrice,
-        JSON.stringify({ material: input.material }),
+        JSON.stringify({ material: input.material, images: input.images || [] }),
       ],
     });
     return this.findById(res.rows[0].id, lang);
@@ -168,7 +170,7 @@ class ProductsModel {
         input.image,
         input.description,
         numericPrice,
-        JSON.stringify({ material: input.material }),
+        JSON.stringify({ material: input.material, images: input.images || [] }),
         id
       ],
     });

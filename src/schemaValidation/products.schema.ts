@@ -9,11 +9,16 @@ export const productSchema = z.object({
   material: z.string().min(1),
   price: z.string().min(1),
   description: z.string().min(1),
-  image: z.string().url().transform(val => {
+  image: z.string().transform(val => {
     if (!val) return val;
-    const match = val.match(/^https?:\/\/[^\/]+\/(public\/static\/images\/.*)$/);
+    const match = val.match(/^https?:\/\/[^\/]+\/(.*)$/);
     return match ? match[1] : val;
   }),
+  images: z.array(z.string().transform(val => {
+    if (!val) return val;
+    const match = val.match(/^https?:\/\/[^\/]+\/(.*)$/);
+    return match ? match[1] : val;
+  })).optional(),
   slug: z.string().optional(),
 });
 
