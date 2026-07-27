@@ -101,16 +101,14 @@ import { DEFAULT_API_PREFIX } from "./constants";
     message: "Welcome to MakerSpace API Server",
   }));
 
-  if (envConfig.BASE_PATH) {
-    server.get(`${envConfig.BASE_PATH}/`, async () => ({
-      ok: true,
-      message: "Welcome to MakerSpace API Server (Base Path)",
-    }));
-    server.get(`${envConfig.BASE_PATH}`, async () => ({
-      ok: true,
-      message: "Welcome to MakerSpace API Server (Base Path)",
-    }));
-  }
+  server.get("/makerspace_server/", async () => ({
+    ok: true,
+    message: "Welcome to MakerSpace API Server (Base Path)",
+  }));
+  server.get("/makerspace_server", async () => ({
+    ok: true,
+    message: "Welcome to MakerSpace API Server (Base Path)",
+  }));
 
   server.get("/health", async () => ({
     ok: true,
