@@ -11,9 +11,10 @@ export const createDiySchema = z.object({
   }),
   description: z.string().optional(),
   content: z.string().optional(),
-  duration: z.string().optional(),
   difficulty: z.string().optional(),
   draft: z.boolean().optional().default(false),
+  start_time: z.string().nullable().optional(),
+  end_time: z.string().nullable().optional(),
 });
 
 export const updateDiySchema = createDiySchema.partial();

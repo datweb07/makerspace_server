@@ -24,8 +24,8 @@ class DiyModel {
 
   async insert(data: CreateDiyType, lang: string = "vi") {
     return getPool(lang).query({
-      text: `INSERT INTO workshops.diy (title, slug, cover_image, description, content, duration, difficulty, draft) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      text: `INSERT INTO workshops.diy (title, slug, cover_image, description, content, difficulty, draft, start_time, end_time) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
       values: [
         data.title,
         data.slug,
@@ -33,9 +33,10 @@ class DiyModel {
         data.cover_image || null,
         data.description || null,
         data.content || null,
-        data.duration || null,
         data.difficulty || null,
         data.draft || false,
+        data.start_time || null,
+        data.end_time || null,
       ],
     });
   }
