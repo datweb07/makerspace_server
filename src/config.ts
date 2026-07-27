@@ -25,7 +25,7 @@ const env = {
   GOOGLE_PRIVATE_KEY: process.env.GOOGLE_PRIVATE_KEY ?? "",
   GOOGLE_SHEET_ID: process.env.GOOGLE_SHEET_ID ?? "",
   MEDIA_UPLOAD_FOLDER: process.env.MEDIA_UPLOAD_FOLDER ?? "public/static",
-  BASE_PATH: process.env.BASE_PATH ?? "",
+  BASE_PATH: process.env.BASE_PATH ?? (process.env.OS !== "Windows_NT" ? "/makerspace_server" : ""),
 };
 
 export default env;
