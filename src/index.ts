@@ -65,7 +65,7 @@ import { DEFAULT_API_PREFIX } from "./constants";
 
   server.register(fastifyStatic, {
     root: publicPath,
-    prefix: "/public/",
+    prefix: envConfig.BASE_PATH ? `${envConfig.BASE_PATH}/public/` : "/public/",
   });
 
   server.register(fastifySensible);
@@ -119,9 +119,10 @@ import { DEFAULT_API_PREFIX } from "./constants";
 
   server.addHook("onSend", (request, reply, payload: any, done) => {
     if (typeof payload === "string" && payload.includes('"public/static/images/')) {
+      const basePath = envConfig.BASE_PATH ? envConfig.BASE_PATH : "";
       const newPayload = payload.replace(
         /"public\/static\/images\//g,
-        `"${envConfig.SERVER_PROTOCOL}://${envConfig.SERVER_DOMAIN}/public/static/images/`
+        `"${envConfig.SERVER_PROTOCOL}://${envConfig.SERVER_DOMAIN}${basePath}/public/static/images/`
       );
       done(null, newPayload);
     } else {
