@@ -32,7 +32,7 @@ import careersRoute from "./routes/careers.route";
 import { DEFAULT_API_PREFIX } from "./constants";
 
 (async function main() {
-  const server = fastify({ logger: true, maxParamLength: 1000 });
+  const server = fastify({ logger: true, maxParamLength: 1000, ignoreTrailingSlash: true });
 
   server.register(cors, {
     credentials: true,
@@ -101,10 +101,6 @@ import { DEFAULT_API_PREFIX } from "./constants";
     message: "Welcome to MakerSpace API Server",
   }));
 
-  server.get("/makerspace_server/", async () => ({
-    ok: true,
-    message: "Welcome to MakerSpace API Server (Base Path)",
-  }));
   server.get("/makerspace_server", async () => ({
     ok: true,
     message: "Welcome to MakerSpace API Server (Base Path)",
