@@ -57,11 +57,27 @@ export const updateStaff = async (
   reply: FastifyReply
 ) => {
   try {
+    const oldStaffRes = await staffModel.getById(req.params.id, req.lang);
+    
     const result = await staffModel.update(req.params.id, req.body, req.lang);
     if (result.rows.length === 0) {
       return reply.status(404).send({ message: "Staff not found" });
     }
     const staff = result.rows[0];
+
+    if (oldStaffRes.rows.length > 0) {
+      const oldImage = oldStaffRes.rows[0].cover_image;
+      if (oldImage && oldImage !== staff.cover_image) {
+        const fs = require("fs");
+        const path = require("path");
+        const filePath = path.join(process.cwd(), oldImage);
+        fs.unlink(filePath, (err: any) => {
+          if (err && err.code !== "ENOENT") {
+            console.error("Failed to delete old image file:", err);
+          }
+        });
+      }
+    }
     staff.image = staff.cover_image;
     staff.cover_image = staff.cover_image;
     reply.send({ message: "Updated successfully", data: staff });
@@ -80,6 +96,19 @@ export const deleteStaff = async (
     if (result.rows.length === 0) {
       return reply.status(404).send({ message: "Staff not found" });
     }
+
+    const staff = result.rows[0];
+    if (staff.cover_image) {
+      const fs = require("fs");
+      const path = require("path");
+      const filePath = path.join(process.cwd(), staff.cover_image);
+      fs.unlink(filePath, (err: any) => {
+        if (err && err.code !== "ENOENT") {
+          console.error("Failed to delete image file:", err);
+        }
+      });
+    }
+
     reply.send({ message: "Deleted successfully" });
   } catch (error) {
     console.error(error);

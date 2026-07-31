@@ -57,11 +57,27 @@ export const updateTechnicals = async (
   reply: FastifyReply
 ) => {
   try {
+    const oldTechnicalsRes = await technicalsModel.getById(req.params.id, req.lang);
+    
     const result = await technicalsModel.update(req.params.id, req.body, req.lang);
     if (result.rows.length === 0) {
       return reply.status(404).send({ message: "Technicals not found" });
     }
     const technicals = result.rows[0];
+
+    if (oldTechnicalsRes.rows.length > 0) {
+      const oldImage = oldTechnicalsRes.rows[0].cover_image;
+      if (oldImage && oldImage !== technicals.cover_image) {
+        const fs = require("fs");
+        const path = require("path");
+        const filePath = path.join(process.cwd(), oldImage);
+        fs.unlink(filePath, (err: any) => {
+          if (err && err.code !== "ENOENT") {
+            console.error("Failed to delete old image file:", err);
+          }
+        });
+      }
+    }
     technicals.image = technicals.cover_image;
     technicals.cover_image = technicals.cover_image;
     reply.send({ message: "Updated successfully", data: technicals });
@@ -80,6 +96,19 @@ export const deleteTechnicals = async (
     if (result.rows.length === 0) {
       return reply.status(404).send({ message: "Technicals not found" });
     }
+
+    const technicals = result.rows[0];
+    if (technicals.cover_image) {
+      const fs = require("fs");
+      const path = require("path");
+      const filePath = path.join(process.cwd(), technicals.cover_image);
+      fs.unlink(filePath, (err: any) => {
+        if (err && err.code !== "ENOENT") {
+          console.error("Failed to delete image file:", err);
+        }
+      });
+    }
+
     reply.send({ message: "Deleted successfully" });
   } catch (error) {
     console.error(error);

@@ -6,10 +6,9 @@ export const TechnicalsSchema = z.object({
   title: z.string().nullable().optional(),
   bio: z.string().nullable().optional(),
   email: z.string().email().nullable().optional(),
-  phone: z.string().nullable().optional(),
   cover_image: z.string().min(1, "Cover image is required").transform(val => {
     if (!val) return val;
-    const match = val.match(/^https?:\/\/[^\/]+\/(public\/static\/images\/.*)$/);
+    const match = val.match(/^https?:\/\/[^\/]+\/(?:makerspace_server\/)?(public\/static\/images\/.*)$/);
     return match ? match[1] : val;
   }),
   display_order: z.number().int().optional().default(0),
@@ -24,10 +23,9 @@ export const CreateTechnicalsBody = z.object({
   title: z.string().nullable().optional(),
   bio: z.string().nullable().optional(),
   email: z.string().email("Invalid email").nullable().optional().or(z.literal("")),
-  phone: z.string().nullable().optional(),
   cover_image: z.string().min(1, "Cover image is required").transform(val => {
     if (!val) return val;
-    const match = val.match(/^https?:\/\/[^\/]+\/(public\/static\/images\/.*)$/);
+    const match = val.match(/^https?:\/\/[^\/]+\/(?:makerspace_server\/)?(public\/static\/images\/.*)$/);
     return match ? match[1] : val;
   }),
   display_order: z.number().int().optional().default(0),
@@ -41,10 +39,9 @@ export const UpdateTechnicalsBody = z.object({
   title: z.string().nullable().optional(),
   bio: z.string().nullable().optional(),
   email: z.string().email("Invalid email").nullable().optional().or(z.literal("")),
-  phone: z.string().nullable().optional(),
   cover_image: z.string().min(1, "Cover image is required").optional().transform(val => {
     if (!val) return val;
-    const match = val.match(/^https?:\/\/[^\/]+\/(public\/static\/images\/.*)$/);
+    const match = val.match(/^https?:\/\/[^\/]+\/(?:makerspace_server\/)?(public\/static\/images\/.*)$/);
     return match ? match[1] : val;
   }),
   display_order: z.number().int().optional(),

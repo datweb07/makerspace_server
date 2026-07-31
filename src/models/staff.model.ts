@@ -17,15 +17,14 @@ class StaffModel {
 
   async insert(data: CreateStaffType, lang: string = "vi") {
     return getPool(lang).query({
-      text: `INSERT INTO people.staff (id, name, title, bio, email, phone, cover_image, display_order, draft) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      text: `INSERT INTO people.staff (id, name, title, bio, email, cover_image, display_order, draft) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
       values: [
         data.id,
         data.name,
         data.title || null,
         data.bio || null,
         data.email || null,
-        data.phone || null,
         data.cover_image,
         data.display_order ?? 0,
         data.draft ?? false,
