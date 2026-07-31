@@ -1,5 +1,5 @@
 import path from "path";
-import fs from "fs"; 
+import fs from "fs";
 import cors from "@fastify/cors";
 import fastify, { FastifyRequest, HookHandlerDoneFunction } from "fastify";
 import fastifyCookie from "@fastify/cookie";
@@ -32,7 +32,7 @@ import careersRoute from "./routes/careers.route";
 import { DEFAULT_API_PREFIX } from "./constants";
 
 (async function main() {
-  const server = fastify({ logger: true, maxParamLength: 1000, ignoreTrailingSlash: true });
+  const server = fastify({ logger: true, routerOptions: { ignoreTrailingSlash: true }, maxParamLength: 1000 });
 
   server.register(cors, {
     credentials: true,
@@ -41,7 +41,7 @@ import { DEFAULT_API_PREFIX } from "./constants";
 
       try {
         const hostname = new URL(origin).hostname;
-        
+
         if (hostname === "localhost" || hostname === "127.0.0.1") {
           return cb(null, true);
         }
@@ -143,7 +143,7 @@ import { DEFAULT_API_PREFIX } from "./constants";
   server.register(shortCoursesRoute, { prefix: `${DEFAULT_API_PREFIX}/workshops/short_courses` });
   server.register(schedulesRoute, { prefix: `${DEFAULT_API_PREFIX}/workshops/schedules` });
   server.register(careersRoute, { prefix: `${DEFAULT_API_PREFIX}/posts/careers` });
-  
+
   try {
     await server.listen({
       port: Number(envConfig.PORT),
