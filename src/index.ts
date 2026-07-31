@@ -106,6 +106,11 @@ import { DEFAULT_API_PREFIX } from "./constants";
     message: "Welcome to MakerSpace API Server (Base Path)",
   }));
 
+  server.get("/makerspace_server/ping", async () => ({
+    ok: true,
+    message: "pong - v2 with trailing slash fix",
+  }));
+
   server.get("/health", async () => ({
     ok: true,
     service: "makerspace_server",
