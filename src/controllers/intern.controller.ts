@@ -57,11 +57,27 @@ export const updateIntern = async (
   reply: FastifyReply
 ) => {
   try {
+    const oldInternRes = await internModel.getById(req.params.id, req.lang);
+
     const result = await internModel.update(req.params.id, req.body, req.lang);
     if (result.rows.length === 0) {
       return reply.status(404).send({ message: "Intern not found" });
     }
     const intern = result.rows[0];
+
+    if (oldInternRes.rows.length > 0) {
+      const oldImage = oldInternRes.rows[0].cover_image;
+      if (oldImage && oldImage !== intern.cover_image) {
+        const fs = require("fs");
+        const path = require("path");
+        const filePath = path.join(process.cwd(), oldImage);
+        fs.unlink(filePath, (err: any) => {
+          if (err && err.code !== "ENOENT") {
+            console.error("Failed to delete old image file:", err);
+          }
+        });
+      }
+    }
     intern.image = intern.cover_image;
     intern.cover_image = intern.cover_image;
     reply.send({ message: "Updated successfully", data: intern });
@@ -80,6 +96,19 @@ export const deleteIntern = async (
     if (result.rows.length === 0) {
       return reply.status(404).send({ message: "Intern not found" });
     }
+
+    const intern = result.rows[0];
+    if (intern.cover_image) {
+      const fs = require("fs");
+      const path = require("path");
+      const filePath = path.join(process.cwd(), intern.cover_image);
+      fs.unlink(filePath, (err: any) => {
+        if (err && err.code !== "ENOENT") {
+          console.error("Failed to delete image file:", err);
+        }
+      });
+    }
+
     reply.send({ message: "Deleted successfully" });
   } catch (error) {
     console.error(error);
