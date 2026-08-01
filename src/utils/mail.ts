@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
 });
 
 export const sendVerificationEmail = async (to: string, token: string) => {
-  const verifyLink = `${envConfig.CORS_ORIGIN}/makerspace/vi/dang-nhap?verify=${token}`;
+  const verifyLink = `${envConfig.CORS_ORIGIN}/vi/login?verify=${token}`;
 
   const mailOptions = {
     from: `"UEH - MakerSpace" <${envConfig.EMAIL_APP_USERNAME}>`,

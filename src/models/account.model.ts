@@ -16,7 +16,7 @@ export class AccountModel {
   async insertGuest(username: string, passwordHash: string, lang: string = "vi") {
     const query = `
       INSERT INTO accounts.guests (username, password, role, auth_provider)
-      VALUES ($1, $2, 'guest', 'credentials')
+      VALUES ($1, $2, 'guest', 'password')
       RETURNING *;
     `;
     const result = await getPool(lang).query(query, [username, passwordHash]);
