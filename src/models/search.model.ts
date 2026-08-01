@@ -32,12 +32,6 @@ class SearchModel {
       FROM workshops.short_courses
       WHERE title ILIKE $1 OR description ILIKE $1
       
-      UNION ALL
-      
-      SELECT id, title, slug, cover_image, description, 'workshops' as type, created_at
-      FROM workshops.workshops
-      WHERE title ILIKE $1 OR description ILIKE $1
-      
       ORDER BY created_at DESC
       LIMIT 20;
     `;
