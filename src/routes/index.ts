@@ -7,3 +7,4 @@ export { default as utilsRoute } from "./utils.route";
 export { default as diyRoute } from "./diy.route";
 export { default as shortCoursesRoute } from "./short_courses.route";
 export { default as schedulesRoute } from "./schedules.route";
+export { default as searchRoute } from "./search.route";

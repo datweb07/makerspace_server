@@ -29,6 +29,7 @@ import diyRoute from "./routes/diy.route";
 import shortCoursesRoute from "./routes/short_courses.route";
 import schedulesRoute from "./routes/schedules.route";
 import careersRoute from "./routes/careers.route";
+import searchRoute from "./routes/search.route";
 import { DEFAULT_API_PREFIX } from "./constants";
 
 (async function main() {
@@ -149,6 +150,7 @@ import { DEFAULT_API_PREFIX } from "./constants";
   server.register(shortCoursesRoute, { prefix: `${DEFAULT_API_PREFIX}/workshops/short_courses` });
   server.register(schedulesRoute, { prefix: `${DEFAULT_API_PREFIX}/workshops/schedules` });
   server.register(careersRoute, { prefix: `${DEFAULT_API_PREFIX}/posts/careers` });
+  server.register(searchRoute, { prefix: `${DEFAULT_API_PREFIX}/search` });
 
   try {
     await server.listen({
