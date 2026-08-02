@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { loginUser, registerGuest, verifyGuest } from "../controllers/user.controller";
+import { loginUser, registerGuest, verifyGuest, getProfile, updateProfile } from "../controllers/user.controller";
 import { LoginBody, LoginBodyType, RegisterBody, RegisterBodyType, LoginRes, LoginResType } from "../schemaValidation/auth.schema";
 import { verifySessionToken } from "../utils/jwt";
 import z from "zod";
@@ -64,6 +64,9 @@ async function usersRoute(server: FastifyInstance) {
       reply.status(401).send({ message: "Error on Authorizing" });
     }
   });
+
+  server.get("/profile", getProfile);
+  server.put("/profile", updateProfile);
 }
 
 export default usersRoute;

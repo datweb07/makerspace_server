@@ -147,3 +147,59 @@ export async function verifyGuest(
   }
 }
 
+export async function getProfile(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  try {
+    const sessionToken = request.headers.authorization || "";
+    if (!sessionToken) {
+      return reply.status(401).send({ message: "Unauthorized" });
+    }
+    const decoded = verifySessionToken(sessionToken) as any;
+    const accountModel = new AccountModel();
+    let account = await accountModel.findGuestByUsername(decoded.username, request.lang);
+    if (!account) {
+      account = await accountModel.findMemberByEmail(decoded.username, request.lang);
+    }
+    if (!account) {
+      return reply.status(404).send({ message: "Account not found" });
+    }
+
+    // Exclude password
+    const { password, ...profile } = account;
+    return reply.status(200).send({ data: profile });
+  } catch (error) {
+    console.error(error);
+    return reply.status(500).send({ message: "Internal server error" });
+  }
+}
+
+export async function updateProfile(
+  request: FastifyRequest<{ Body: { fullname: string; phone: string } }>,
+  reply: FastifyReply
+) {
+  try {
+    const sessionToken = request.headers.authorization || "";
+    if (!sessionToken) {
+      return reply.status(401).send({ message: "Unauthorized" });
+    }
+    const decoded = verifySessionToken(sessionToken) as any;
+    const { fullname, phone } = request.body;
+
+    const accountModel = new AccountModel();
+    // For now, assume we only update guests, as members are managed elsewhere
+    let account = await accountModel.findGuestByUsername(decoded.username, request.lang);
+    
+    if (account) {
+      await accountModel.updateGuestProfile(decoded.username, fullname, phone, request.lang);
+      return reply.status(200).send({ message: "Profile updated successfully" });
+    } else {
+      // If it's a member or doesn't exist in guests
+      return reply.status(403).send({ message: "Members cannot update profile here or account not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    return reply.status(500).send({ message: "Internal server error" });
+  }
+}
