@@ -56,7 +56,19 @@ const workshopsRoute: FastifyPluginAsync = async (server) => {
       if (!decoded || !decoded.username) {
         return reply.status(401).send({ message: "Invalid session token" });
       }
-      return workshopsController.listMyRegistrations(decoded.username, request.lang);
+
+      // Fetch real email using AccountModel
+      const { default: AccountModel } = require("../models/account.model");
+      const accountModel = new AccountModel();
+      let account = await accountModel.findGuestByUsername(decoded.username, request.lang);
+      if (!account) {
+        account = await accountModel.findMemberByEmail(decoded.username, request.lang);
+      }
+      if (!account || !account.email) {
+        return reply.status(404).send({ message: "Account or email not found" });
+      }
+
+      return workshopsController.listMyRegistrations(account.email, request.lang);
     } catch (err) {
       console.error(err);
       return reply.status(401).send({ message: "Error authorizing" });
