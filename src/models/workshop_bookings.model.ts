@@ -16,6 +16,26 @@ class WorkshopBookingsModel {
     });
   }
 
+  async getByEmail(email: string, lang: string = "vi") {
+    // Join with workshops.diy and short_courses to get the title, date, time, location
+    return getPool(lang).query({
+      text: `
+        SELECT 
+          wb.*,
+          COALESCE(w.title, s.title) as workshop_title,
+          COALESCE(w.start_time, s.start_time) as workshop_start_time,
+          COALESCE(w.location, s.location) as workshop_location,
+          wb.id as ticket_code
+        FROM registrations.workshop_bookings wb
+        LEFT JOIN workshops.diy w ON wb.workshop_id = w.slug AND wb.workshop_type = 'diy'
+        LEFT JOIN courses.short_courses s ON wb.workshop_id = s.slug AND wb.workshop_type = 'short_course'
+        WHERE wb.email = $1
+        ORDER BY wb.created_at DESC
+      `,
+      values: [email]
+    });
+  }
+
   async getById(id: string, lang: string = "vi") {
     return getPool(lang).query({
       text: `SELECT * FROM registrations.workshop_bookings WHERE id = $1`,

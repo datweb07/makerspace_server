@@ -45,6 +45,24 @@ const workshopsRoute: FastifyPluginAsync = async (server) => {
 
   server.get("/registrations", async (request) => workshopsController.listRegistrations(request.lang));
 
+  server.get("/registrations/me", async (request, reply) => {
+    const sessionToken = request.headers.authorization || "";
+    if (!sessionToken) {
+      return reply.status(401).send({ message: "Unauthorized" });
+    }
+    try {
+      const { verifySessionToken } = require("../utils/jwt");
+      const decoded = verifySessionToken(sessionToken) as any;
+      if (!decoded || !decoded.username) {
+        return reply.status(401).send({ message: "Invalid session token" });
+      }
+      return workshopsController.listMyRegistrations(decoded.username, request.lang);
+    } catch (err) {
+      console.error(err);
+      return reply.status(401).send({ message: "Error authorizing" });
+    }
+  });
+
   server.get("/registrations/export", async (request, reply) => {
     const buffer = await workshopsController.exportBookingsExcel(request.lang);
     

@@ -59,6 +59,12 @@ export const workshopsController = {
       data: res.rows,
     };
   },
+  async listMyRegistrations(email: string, lang: string = "vi") {
+    const res = await workshopBookingsModel.getByEmail(email, lang);
+    return {
+      data: res.rows,
+    };
+  },
   async deleteRegistration(id: string, lang: string = "vi") {
     const res = await workshopBookingsModel.delete(id, lang);
     if (res.rowCount === 0) throw new Error("Booking not found");
