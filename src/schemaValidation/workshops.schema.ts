@@ -9,12 +9,13 @@ export const createDiySchema = z.object({
     const match = val.match(/^https?:\/\/[^\/]+\/(public\/static\/images\/.*)$/);
     return match ? match[1] : val;
   }),
-  description: z.string().optional(),
   content: z.string().optional(),
   difficulty: z.string().optional(),
   draft: z.boolean().optional().default(false),
   start_time: z.string().nullable().optional(),
   end_time: z.string().nullable().optional(),
+  location: z.string().optional(),
+  max_participants: z.coerce.number().optional(),
 });
 
 export const updateDiySchema = createDiySchema.partial();
