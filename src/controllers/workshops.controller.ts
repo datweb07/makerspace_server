@@ -6,6 +6,9 @@ import { JWT } from "google-auth-library";
 import envConfig from "../config";
 import ExcelJS from "exceljs";
 import dayjs from "dayjs";
+import diyModel from "../models/diy.model";
+import shortCoursesModel from "../models/short_courses.model";
+import { sendBookingReceivedEmail, sendBookingApprovedEmail, sendBookingCancelledEmail } from "../utils/mail";
 
 export const workshopsController = {
   listWorkshops(query?: ListWorkshopsQuery) {
@@ -25,11 +28,30 @@ export const workshopsController = {
   async createRegistration(input: CreateWorkshopRegistrationInput, lang: string = "vi") {
     // Save to Postgres
     const dbResult = await workshopBookingsModel.insert(input, lang);
+    const booking = dbResult.rows[0];
+
+    // Send email
+    try {
+      let workshopName = input.workshop_id;
+      if (input.workshop_type === 'diy') {
+        const wsRes = await diyModel.getBySlug(input.workshop_id, lang);
+        if (wsRes.rows.length > 0) workshopName = wsRes.rows[0].title;
+      } else if (input.workshop_type === 'short_course') {
+        const wsRes = await shortCoursesModel.getBySlug(input.workshop_id, lang);
+        if (wsRes.rows.length > 0) workshopName = wsRes.rows[0].title;
+      }
+
+      await sendBookingReceivedEmail(
+        booking.email,
+        booking.name,
+        workshopName,
+        booking.participants
+      );
+    } catch (error) {
+      console.error("Failed to send booking received email:", error);
+    }
     
-    // Legacy Google Sheets logic can be kept if needed, but omitted for now to prioritize Postgres.
-    // If you want to keep Google Sheets, you can re-enable it.
-    
-    return dbResult.rows[0];
+    return booking;
   },
   async listRegistrations(lang: string = "vi") {
     const res = await workshopBookingsModel.getAll(lang);
@@ -40,7 +62,55 @@ export const workshopsController = {
   async updateBookingStatus(id: string, input: UpdateBookingStatusInput, lang: string = "vi") {
     const res = await workshopBookingsModel.updateStatus(id, input.status, lang);
     if (res.rowCount === 0) throw new Error("Booking not found");
-    return res.rows[0];
+    const booking = res.rows[0];
+
+    // Send email on status change
+    try {
+      if (input.status === "approved" || input.status === "cancelled") {
+        let workshopName = booking.workshop_id;
+        let startTime = "Đang cập nhật";
+        let location = "Đang cập nhật";
+
+        if (booking.workshop_type === 'diy') {
+          const wsRes = await diyModel.getBySlug(booking.workshop_id, lang);
+          if (wsRes.rows.length > 0) {
+            const ws = wsRes.rows[0];
+            workshopName = ws.title;
+            location = ws.location || location;
+            if (ws.start_time) startTime = dayjs(ws.start_time).format('HH:mm DD/MM/YYYY');
+          }
+        } else if (booking.workshop_type === 'short_course') {
+          const wsRes = await shortCoursesModel.getBySlug(booking.workshop_id, lang);
+          if (wsRes.rows.length > 0) {
+            const ws = wsRes.rows[0];
+            workshopName = ws.title;
+            // Short courses might not have explicit start_time/location in the same way, adapt as needed
+            // Assuming we use duration or similar if start_time is missing
+          }
+        }
+
+        if (input.status === "approved") {
+          await sendBookingApprovedEmail(
+            booking.email,
+            booking.name,
+            workshopName,
+            booking.participants,
+            startTime,
+            location
+          );
+        } else if (input.status === "cancelled") {
+          await sendBookingCancelledEmail(
+            booking.email,
+            booking.name,
+            workshopName
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Failed to send booking status email:", error);
+    }
+
+    return booking;
   },
   async exportBookingsExcel(lang: string = "vi") {
     const res = await workshopBookingsModel.getAll(lang);
