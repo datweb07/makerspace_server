@@ -1,6 +1,7 @@
 import { type FastifyPluginAsync } from "fastify";
 import { workshopsController } from "../controllers/workshops.controller";
 import { createWorkshopRegistrationSchema, listWorkshopsQuerySchema, workshopIdParamsSchema, updateBookingStatusSchema, type CreateWorkshopRegistrationInput, type ListWorkshopsQuery, type UpdateBookingStatusInput } from "../schemaValidation/workshops.schema";
+import { AccountModel } from "../models/account.model";
 
 const workshopsRoute: FastifyPluginAsync = async (server) => {
   server.get(
@@ -58,17 +59,19 @@ const workshopsRoute: FastifyPluginAsync = async (server) => {
       }
 
       // Fetch real email using AccountModel
-      const { default: AccountModel } = require("../models/account.model");
       const accountModel = new AccountModel();
       let account = await accountModel.findGuestByUsername(decoded.username, request.lang);
       if (!account) {
         account = await accountModel.findMemberByEmail(decoded.username, request.lang);
       }
-      if (!account || !account.email) {
+      
+      const email = account?.email || account?.username;
+      
+      if (!account || !email) {
         return reply.status(404).send({ message: "Account or email not found" });
       }
 
-      return workshopsController.listMyRegistrations(account.email, request.lang);
+      return workshopsController.listMyRegistrations(email, request.lang);
     } catch (err) {
       console.error(err);
       return reply.status(401).send({ message: "Error authorizing" });
