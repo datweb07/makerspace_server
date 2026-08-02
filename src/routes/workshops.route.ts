@@ -66,6 +66,14 @@ const workshopsRoute: FastifyPluginAsync = async (server) => {
       return workshopsController.updateBookingStatus(id, body, request.lang);
     }
   );
+
+  server.delete(
+    "/registrations/:id",
+    async (request) => {
+      const { id } = request.params as { id: string };
+      return workshopsController.deleteRegistration(id, request.lang);
+    }
+  );
 };
 
 export default workshopsRoute;

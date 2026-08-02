@@ -50,7 +50,7 @@ export const workshopsController = {
     } catch (error) {
       console.error("Failed to send booking received email:", error);
     }
-    
+
     return booking;
   },
   async listRegistrations(lang: string = "vi") {
@@ -58,6 +58,11 @@ export const workshopsController = {
     return {
       data: res.rows,
     };
+  },
+  async deleteRegistration(id: string, lang: string = "vi") {
+    const res = await workshopBookingsModel.delete(id, lang);
+    if (res.rowCount === 0) throw new Error("Booking not found");
+    return { message: "Deleted successfully" };
   },
   async updateBookingStatus(id: string, input: UpdateBookingStatusInput, lang: string = "vi") {
     const res = await workshopBookingsModel.updateStatus(id, input.status, lang);
@@ -131,7 +136,26 @@ export const workshopsController = {
       { header: 'Ngày đăng ký', key: 'created_at', width: 25 },
     ];
 
+    bookings.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    let currentMonth = '';
+
     bookings.forEach((booking) => {
+      const monthStr = dayjs(booking.created_at).format('MM/YYYY');
+      if (monthStr !== currentMonth) {
+        currentMonth = monthStr;
+        const headerRow = worksheet.addRow({ id: `Tháng ${currentMonth}` });
+
+        try {
+          worksheet.mergeCells(headerRow.number, 1, headerRow.number, 9);
+          headerRow.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
+          headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4CAF50' } };
+          headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
+        } catch (e) {
+          console.error("Merge cell error:", e);
+        }
+      }
+
       worksheet.addRow({
         id: booking.id,
         name: booking.name,
