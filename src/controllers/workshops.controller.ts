@@ -1,8 +1,11 @@
-import type { CreateWorkshopRegistrationInput, ListWorkshopsQuery } from "../schemaValidation/workshops.schema";
+import type { CreateWorkshopRegistrationInput, ListWorkshopsQuery, UpdateBookingStatusInput } from "../schemaValidation/workshops.schema";
 import { workshopsModel } from "../models/workshops.model";
+import workshopBookingsModel from "../models/workshop_bookings.model";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { JWT } from "google-auth-library";
 import envConfig from "../config";
+import ExcelJS from "exceljs";
+import dayjs from "dayjs";
 
 export const workshopsController = {
   listWorkshops(query?: ListWorkshopsQuery) {
@@ -19,53 +22,63 @@ export const workshopsController = {
       data: workshopsModel.listFeatured(),
     };
   },
-  async createRegistration(input: CreateWorkshopRegistrationInput) {
-    // Lưu vào database hoặc file gốc nếu cần
-    const dbResult = workshopsModel.createRegistration(input);
-    const workshop = workshopsModel.list().find((w) => w.id === input.workshopId);
-    const workshopName = workshop ? workshop.title : `Workshop ID: ${input.workshopId}`;
-
-    // Lưu vào Google Sheets
-    try {
-      const email = envConfig.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-      const key = envConfig.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-      const sheetId = envConfig.GOOGLE_SHEET_ID;
-
-      if (email && key && sheetId) {
-        const serviceAccountAuth = new JWT({
-          email: email,
-          key: key,
-          scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-        });
-
-        const doc = new GoogleSpreadsheet(sheetId, serviceAccountAuth);
-        await doc.loadInfo();
-        const sheet = doc.sheetsByIndex[0];
-
-        // Format: Họ Tên, Số điện thoại, Email, Tên Workshop, Ngày đăng ký
-        const registrationDate = new Date().toLocaleString("vi-VN");
-        await sheet.addRow([
-          input.fullName,
-          input.phone,
-          input.email,
-          workshopName,
-          registrationDate,
-          input.participants,
-          input.note || ""
-        ]);
-      } else {
-        console.warn("Google Sheets configuration missing, skipping sheet update.");
-      }
-    } catch (error) {
-      console.error("Lỗi khi ghi vào Google Sheets:", error);
-      // We don't throw here to ensure the user still sees a success message if DB save succeeded
-    }
-
-    return dbResult;
+  async createRegistration(input: CreateWorkshopRegistrationInput, lang: string = "vi") {
+    // Save to Postgres
+    const dbResult = await workshopBookingsModel.insert(input, lang);
+    
+    // Legacy Google Sheets logic can be kept if needed, but omitted for now to prioritize Postgres.
+    // If you want to keep Google Sheets, you can re-enable it.
+    
+    return dbResult.rows[0];
   },
-  listRegistrations() {
+  async listRegistrations(lang: string = "vi") {
+    const res = await workshopBookingsModel.getAll(lang);
     return {
-      data: workshopsModel.listRegistrations(),
+      data: res.rows,
     };
   },
+  async updateBookingStatus(id: string, input: UpdateBookingStatusInput, lang: string = "vi") {
+    const res = await workshopBookingsModel.updateStatus(id, input.status, lang);
+    if (res.rowCount === 0) throw new Error("Booking not found");
+    return res.rows[0];
+  },
+  async exportBookingsExcel(lang: string = "vi") {
+    const res = await workshopBookingsModel.getAll(lang);
+    const bookings = res.rows;
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Workshop Bookings');
+
+    worksheet.columns = [
+      { header: 'ID', key: 'id', width: 10 },
+      { header: 'Họ và tên', key: 'name', width: 30 },
+      { header: 'Email', key: 'email', width: 30 },
+      { header: 'Số điện thoại', key: 'phone', width: 20 },
+      { header: 'Tên Workshop', key: 'workshop_title', width: 40 },
+      { header: 'Số lượng tham gia', key: 'participants', width: 20 },
+      { header: 'Ghi chú', key: 'note', width: 40 },
+      { header: 'Trạng thái', key: 'status', width: 15 },
+      { header: 'Ngày đăng ký', key: 'created_at', width: 25 },
+    ];
+
+    bookings.forEach((booking) => {
+      worksheet.addRow({
+        id: booking.id,
+        name: booking.name,
+        email: booking.email,
+        phone: booking.phone,
+        workshop_title: booking.workshop_title || booking.workshop_id,
+        participants: booking.participants,
+        note: booking.note,
+        status: booking.status,
+        created_at: dayjs(booking.created_at).format('DD/MM/YYYY HH:mm:ss'),
+      });
+    });
+
+    // Style headers
+    worksheet.getRow(1).font = { bold: true };
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return buffer;
+  }
 };

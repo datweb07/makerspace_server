@@ -99,11 +99,17 @@ export type Workshop = {
 };
 
 export const createWorkshopRegistrationSchema = z.object({
-  workshopId: z.number(),
-  fullName: z.string(),
-  phone: z.string(),
-  email: z.string().email(),
-  participants: z.number(),
+  workshop_id: z.string().min(1),
+  workshop_type: z.string().min(1),
+  name: z.string().min(1, "Vui lòng nhập họ tên"),
+  phone: z.string().min(1, "Vui lòng nhập số điện thoại"),
+  email: z.string().email("Email không hợp lệ"),
+  participants: z.coerce.number().min(1),
   note: z.string().optional(),
 });
 export type CreateWorkshopRegistrationInput = z.infer<typeof createWorkshopRegistrationSchema>;
+
+export const updateBookingStatusSchema = z.object({
+  status: z.enum(["pending", "approved", "cancelled"]),
+});
+export type UpdateBookingStatusInput = z.infer<typeof updateBookingStatusSchema>;

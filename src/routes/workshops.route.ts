@@ -1,6 +1,6 @@
 import { type FastifyPluginAsync } from "fastify";
 import { workshopsController } from "../controllers/workshops.controller";
-import { createWorkshopRegistrationSchema, listWorkshopsQuerySchema, workshopIdParamsSchema, type CreateWorkshopRegistrationInput, type ListWorkshopsQuery } from "../schemaValidation/workshops.schema";
+import { createWorkshopRegistrationSchema, listWorkshopsQuerySchema, workshopIdParamsSchema, updateBookingStatusSchema, type CreateWorkshopRegistrationInput, type ListWorkshopsQuery, type UpdateBookingStatusInput } from "../schemaValidation/workshops.schema";
 
 const workshopsRoute: FastifyPluginAsync = async (server) => {
   server.get(
@@ -43,7 +43,29 @@ const workshopsRoute: FastifyPluginAsync = async (server) => {
     async (request) => workshopsController.createRegistration(request.body as CreateWorkshopRegistrationInput),
   );
 
-  server.get("/registrations", async () => workshopsController.listRegistrations());
+  server.get("/registrations", async (request) => workshopsController.listRegistrations(request.lang));
+
+  server.get("/registrations/export", async (request, reply) => {
+    const buffer = await workshopsController.exportBookingsExcel(request.lang);
+    
+    reply.header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    reply.header('Content-Disposition', 'attachment; filename="workshop_bookings.xlsx"');
+    return reply.send(buffer);
+  });
+
+  server.patch(
+    "/registrations/:id/status",
+    {
+      schema: {
+        body: updateBookingStatusSchema,
+      },
+    },
+    async (request) => {
+      const { id } = request.params as { id: string };
+      const body = request.body as UpdateBookingStatusInput;
+      return workshopsController.updateBookingStatus(id, body, request.lang);
+    }
+  );
 };
 
 export default workshopsRoute;
