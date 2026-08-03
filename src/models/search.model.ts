@@ -14,12 +14,7 @@ class SearchModel {
       FROM posts.events
       WHERE title ILIKE $1 OR description ILIKE $1
       
-      UNION ALL
-      
-      SELECT id, title, slug, cover_image, description, 'featured_projects' as type, created_at
-      FROM posts.featured_projects
-      WHERE title ILIKE $1 OR description ILIKE $1
-      
+
       UNION ALL
       
       SELECT id, title, slug, cover_image, description, 'student_life' as type, created_at
