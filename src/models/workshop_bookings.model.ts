@@ -23,7 +23,8 @@ class WorkshopBookingsModel {
         SELECT 
           wb.*,
           COALESCE(w.title, s.title) as workshop_title,
-          COALESCE(w.start_time, s.start_time) as workshop_start_time,
+          w.start_time as workshop_start_time,
+          w.end_time as workshop_end_time,
           COALESCE(w.location, s.location) as workshop_location,
           wb.id as ticket_code
         FROM registrations.workshop_bookings wb
