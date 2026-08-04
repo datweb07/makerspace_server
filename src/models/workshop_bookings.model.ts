@@ -96,6 +96,17 @@ class WorkshopBookingsModel {
       values: [JSON.stringify([requestData]), id],
     });
   }
+
+  async deleteAbsenceRequest(id: string, index: number, lang: string = "vi") {
+    return getPool(lang).query({
+      text: `
+        UPDATE registrations.workshop_bookings 
+        SET absence_requests = absence_requests - $1::int, updated_at = CURRENT_TIMESTAMP 
+        WHERE id = $2 RETURNING *
+      `,
+      values: [index, id],
+    });
+  }
 }
 
 export default new WorkshopBookingsModel();

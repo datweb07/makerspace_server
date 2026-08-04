@@ -93,6 +93,12 @@ const workshopsRoute: FastifyPluginAsync = async (server) => {
     return { data: result, message: "Absence request submitted successfully" };
   });
 
+  server.delete("/registrations/absence/:booking_id/:index", async (request, reply) => {
+    const { booking_id, index } = request.params as { booking_id: string; index: string };
+    const result = await workshopsController.deleteAbsenceRequest(booking_id, parseInt(index), request.lang);
+    return { data: result, message: "Absence request deleted successfully" };
+  });
+
   server.get("/registrations/export", async (request, reply) => {
     const buffer = await workshopsController.exportBookingsExcel(request.lang);
     

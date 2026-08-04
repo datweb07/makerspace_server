@@ -70,6 +70,10 @@ export const workshopsController = {
     const res = await workshopBookingsModel.addAbsenceRequest(id, dataWithTime, lang);
     return res.rows[0];
   },
+  async deleteAbsenceRequest(id: string, index: number, lang: string = "vi") {
+    const res = await workshopBookingsModel.deleteAbsenceRequest(id, index, lang);
+    return res.rows[0];
+  },
   async listMyRegistrations(email: string, lang: string = "vi") {
     const res = await workshopBookingsModel.getByEmail(email, lang);
     return {
