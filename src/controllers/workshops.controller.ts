@@ -26,11 +26,9 @@ export const workshopsController = {
     };
   },
   async createRegistration(input: CreateWorkshopRegistrationInput, lang: string = "vi") {
-    // Save to Postgres
     const dbResult = await workshopBookingsModel.insert(input, lang);
     const booking = dbResult.rows[0];
 
-    // Send email
     try {
       let workshopName = input.workshop_id;
       if (input.workshop_type === 'diy') {
@@ -90,7 +88,6 @@ export const workshopsController = {
     if (res.rowCount === 0) throw new Error("Booking not found");
     const booking = res.rows[0];
 
-    // Send email on status change
     try {
       if (input.status === "approved" || input.status === "cancelled") {
         let workshopName = booking.workshop_id;
@@ -110,8 +107,6 @@ export const workshopsController = {
           if (wsRes.rows.length > 0) {
             const ws = wsRes.rows[0];
             workshopName = ws.title;
-            // Short courses might not have explicit start_time/location in the same way, adapt as needed
-            // Assuming we use duration or similar if start_time is missing
           }
         }
 
@@ -192,7 +187,6 @@ export const workshopsController = {
       });
     });
 
-    // Style headers
     worksheet.getRow(1).font = { bold: true };
 
     const buffer = await workbook.xlsx.writeBuffer();

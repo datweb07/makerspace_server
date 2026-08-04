@@ -3,7 +3,6 @@ import { CreateWorkshopRegistrationInput, UpdateBookingStatusInput } from "../sc
 
 class WorkshopBookingsModel {
   async getAll(lang: string = "vi") {
-    // Join with workshops.diy to get the title
     return getPool(lang).query({
       text: `
         SELECT 
@@ -17,7 +16,6 @@ class WorkshopBookingsModel {
   }
 
   async getByEmail(email: string, lang: string = "vi") {
-    // Join with workshops.diy and short_courses to get the title, date, time, location
     return getPool(lang).query({
       text: `
         SELECT 

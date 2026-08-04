@@ -18,7 +18,7 @@ export async function registerWorkshop(
 ) {
   try {
     const data = request.body;
-    
+
     const email = envConfig.GOOGLE_SERVICE_ACCOUNT_EMAIL;
     const key = envConfig.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
     const sheetId = envConfig.GOOGLE_SHEET_ID;
@@ -35,14 +35,10 @@ export async function registerWorkshop(
     });
 
     const doc = new GoogleSpreadsheet(sheetId, serviceAccountAuth);
-    
-    // Tải thông tin sheet
+
     await doc.loadInfo();
-    const sheet = doc.sheetsByIndex[0]; // Ghi vào trang tính đầu tiên
-    
-    // Thêm dòng mới (Các key này phải khớp với dòng tiêu đề đầu tiên trong Google Sheet, 
-    // hoặc google-spreadsheet tự động thêm dựa vào object mapping nếu cấu hình header đúng).
-    // Ở đây ta ghi theo mảng (row-based) để không phụ thuộc vào Header Name.
+    const sheet = doc.sheetsByIndex[0];
+
     await sheet.addRow([
       data.fullName,
       data.phone,

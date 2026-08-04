@@ -10,17 +10,14 @@ export default async function processUploadPath(request: FastifyRequest) {
     "images",
   );
 
-  // Destination which files need to be uploaded to
   const rawPath = request.url.split("/upload")[1];
-  // Resolve path
+
   const resolvedPath = path.resolve(baseDir, "." + rawPath);
 
-  // Check path traversal
   if (rawPath.includes("..")) {
     throw new Error("Path traversal detected");
   }
 
-  // Ensure the processed path inside base dir
   if (!resolvedPath.startsWith(baseDir)) {
     throw new Error("Invalid directory path");
   }

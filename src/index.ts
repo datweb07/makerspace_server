@@ -102,7 +102,7 @@ import { DEFAULT_API_PREFIX } from "./constants";
 
   server.get("/makerspace_server", async () => ({
     ok: true,
-    message: "Welcome to MakerSpace API Server (Base Path)",
+    message: "Welcome to MakerSpace API Server",
   }));
 
   server.get("/makerspace_server/ping", async () => ({

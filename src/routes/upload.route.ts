@@ -30,7 +30,6 @@ export default async function uploadRoutes(server: FastifyInstance) {
 
         const rawPath = request.url.split("/upload")[1];
 
-        // Return dynamic relative URL
         const normalizePath = (rawPath === "/" || !rawPath ? "" : rawPath) + "/" + fileName;
         const fileUrl = `${envConfig.MEDIA_UPLOAD_FOLDER}/images${normalizePath}`;
         return { url: fileUrl };

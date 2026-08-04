@@ -16,14 +16,14 @@ export default async function careersRoutes(fastify: FastifyInstance) {
   fastify.post(
     "/",
     {
-      // schema: { body: CreateCareersSchema } // using Zod, usually requires a plugin, or manual parse in controller. I'll rely on controller parsing.
+
     },
     createCareers
   );
   fastify.put(
     "/:id",
     {
-      // schema: { body: UpdateCareersSchema }
+
     },
     updateCareers
   );

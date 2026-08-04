@@ -7,7 +7,7 @@ export const getTechnicalsList = async (req: FastifyRequest, reply: FastifyReply
     const result = await technicalsModel.getAll(req.lang);
     const formattedData = result.rows.map(item => ({
       ...item,
-      image: item.cover_image, // Keep image alias if frontend expects it
+      image: item.cover_image, 
       cover_image: item.cover_image
     }));
     reply.send({ data: formattedData });

@@ -14,7 +14,6 @@ export async function loginUser(
     const accountModel = new AccountModel();
 
     if (auth_provider === "google") {
-      // Member Login (Google Whitelist)
       const member = await accountModel.findMemberByEmail(username, request.lang);
       if (!member) {
         return reply.status(404).send({ message: "Email chưa được cấp quyền truy cập." });
@@ -34,15 +33,12 @@ export async function loginUser(
         data: { token, expires },
       });
     } else {
-      // Guest & Admin Login (Username / Password)
       if (!password) {
         return reply.status(400).send({ message: "Vui lòng nhập mật khẩu" });
       }
 
-      // Admin (member) might log in using password, so check members table first
       let account = await accountModel.findMemberByEmail(username, request.lang);
 
-      // If not found in members, check guests table
       if (!account) {
         account = await accountModel.findGuestByUsername(username, request.lang);
       }
@@ -88,7 +84,6 @@ export async function registerGuest(
 
     const accountModel = new AccountModel();
 
-    // Check if exists in either guests or members concurrently to optimize performance
     const [existingGuest, existingMember] = await Promise.all([
       accountModel.findGuestByUsername(username, request.lang),
       accountModel.findMemberByEmail(username, request.lang)
@@ -100,9 +95,8 @@ export async function registerGuest(
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // JWT contains username and passwordHash (which is secure enough for short-lived token)
     const tokenPayload = { username, passwordHash };
-    const verifyToken = signSessionToken(tokenPayload); // Reuse for signing
+    const verifyToken = signSessionToken(tokenPayload);
 
     await sendVerificationEmail(username, verifyToken);
 
@@ -166,7 +160,6 @@ export async function getProfile(
       return reply.status(404).send({ message: "Account not found" });
     }
 
-    // Exclude password
     const { password, ...profile } = account;
     return reply.status(200).send({ data: profile });
   } catch (error) {
@@ -188,14 +181,13 @@ export async function updateProfile(
     const { fullname, phone } = request.body;
 
     const accountModel = new AccountModel();
-    // For now, assume we only update guests, as members are managed elsewhere
+
     let account = await accountModel.findGuestByUsername(decoded.username, request.lang);
-    
+
     if (account) {
       await accountModel.updateGuestProfile(decoded.username, fullname, phone, request.lang);
       return reply.status(200).send({ message: "Profile updated successfully" });
     } else {
-      // If it's a member or doesn't exist in guests
       return reply.status(403).send({ message: "Members cannot update profile here or account not found" });
     }
   } catch (error) {

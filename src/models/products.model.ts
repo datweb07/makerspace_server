@@ -97,7 +97,6 @@ class ProductsModel {
   }
 
   async create(input: CreateProductInput, lang: string = "vi") {
-    // Look up category_id
     let category_id = null;
     if (input.category) {
       const catRes = await getPool(lang).query({
@@ -113,13 +112,12 @@ class ProductsModel {
     if (!slug) {
       slug = input.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "");
     }
-    
-    // Attempt to parse price to numeric, if fail, keep null and rely on UI to display "Liên hệ" if price is 0
+
     let numericPrice = 0;
     try {
       const p = parseFloat(input.price.replace(/[^\d.]/g, ""));
       if (!isNaN(p)) numericPrice = p;
-    } catch(e) {}
+    } catch (e) { }
 
     const res = await getPool(lang).query({
       text: `
@@ -129,9 +127,9 @@ class ProductsModel {
       values: [
         category_id,
         input.name,
-        slug + '-' + Date.now().toString().slice(-4), // ensure uniqueness
+        slug + '-' + Date.now().toString().slice(-4),
         input.image,
-        null, // short description
+        null,
         input.description,
         numericPrice,
         JSON.stringify({ material: input.material, images: input.images || [] }),
@@ -156,7 +154,7 @@ class ProductsModel {
     try {
       const p = parseFloat(input.price.replace(/[^\d.]/g, ""));
       if (!isNaN(p)) numericPrice = p;
-    } catch(e) {}
+    } catch (e) { }
 
     await getPool(lang).query({
       text: `

@@ -34,8 +34,7 @@ export const productsController = {
     return await productsModel.delete(id, lang);
   },
   async getCategoryById(id: number, lang: string = "vi") {
-    // Actually products.model doesn't have findCategoryById, but for edit we might need it, or we can just return true.
-    // wait, I didn't add findCategoryById. Let's just not include it.
+
   },
   async updateCategory(id: number, input: { name: string; slug?: string }, lang: string = "vi") {
     return await productsModel.updateCategory(id, input, lang);

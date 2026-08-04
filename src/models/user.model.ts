@@ -16,7 +16,6 @@ export class UserModel {
     return result.rows[0];
   }
 
-  // Helper method for initialization (seeds admin user)
   async createAdminUser(hashedPassword: string, lang: string = "vi") {
     const query = `
       INSERT INTO ${this.schema}.${this.tableName} (username, password, role, status)

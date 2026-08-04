@@ -58,15 +58,14 @@ const workshopsRoute: FastifyPluginAsync = async (server) => {
         return reply.status(401).send({ message: "Invalid session token" });
       }
 
-      // Fetch real email using AccountModel
       const accountModel = new AccountModel();
       let account = await accountModel.findGuestByUsername(decoded.username, request.lang);
       if (!account) {
         account = await accountModel.findMemberByEmail(decoded.username, request.lang);
       }
-      
+
       const email = account?.email || account?.username;
-      
+
       if (!account || !email) {
         return reply.status(404).send({ message: "Account or email not found" });
       }
@@ -101,7 +100,7 @@ const workshopsRoute: FastifyPluginAsync = async (server) => {
 
   server.get("/registrations/export", async (request, reply) => {
     const buffer = await workshopsController.exportBookingsExcel(request.lang);
-    
+
     reply.header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     reply.header('Content-Disposition', 'attachment; filename="workshop_bookings.xlsx"');
     return reply.send(buffer);

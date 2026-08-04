@@ -47,11 +47,9 @@ jobs:
       - name: Install deps
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
 
-      # Build Fastify app (TypeScript -> JavaScript)
       - name: Build API
         run: ${{ steps.detect-package-manager.outputs.manager }} run build
 
-      # Đóng gói trực tiếp thành file deploy.zip
       - name: Create Zip Package
         run: |
           zip -r deploy.zip dist public package.json package-lock.json
@@ -75,7 +73,6 @@ jobs:
           name: makerspace-api-zip
           path: ./
 
-      # Upload duy nhất file deploy.zip qua FTP
       - name: Sync Zip via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -89,7 +86,6 @@ jobs:
             **/*
             !deploy.zip
 
-      # Gọi Webhook giải nén và restart Node.js server
       - name: Trigger Remote Unzip Webhook
         run: |
           curl -s "https://iscm-api.ueh.edu.vn/unzip.php?key=makerspace2026"

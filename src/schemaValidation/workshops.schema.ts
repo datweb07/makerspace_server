@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// --- DIY Workshops ---
 export const createDiySchema = z.object({
   title: z.string().min(1, "Vui lòng nhập tiêu đề"),
   slug: z.string().min(1, "Vui lòng nhập slug"),
@@ -22,7 +21,6 @@ export const updateDiySchema = createDiySchema.partial();
 export type CreateDiyType = z.infer<typeof createDiySchema>;
 export type UpdateDiyType = z.infer<typeof updateDiySchema>;
 
-// --- Short Courses ---
 export const createShortCourseSchema = z.object({
   title: z.string().min(1, "Vui lòng nhập tiêu đề"),
   slug: z.string().min(1, "Vui lòng nhập slug"),
@@ -39,9 +37,9 @@ export const createShortCourseSchema = z.object({
   level: z.string().optional(),
   experience_requirements: z.string().optional(),
   objectives: z.string().optional(),
-  structure: z.any().optional(), // JSONB
-  offer_by: z.any().optional(), // JSONB
-  summarize: z.any().optional(), // JSONB
+  structure: z.any().optional(),
+  offer_by: z.any().optional(),
+  summarize: z.any().optional(),
   draft: z.boolean().optional().default(false),
   start_time: z.string().nullable().optional(),
   end_time: z.string().nullable().optional(),
@@ -55,7 +53,6 @@ export const updateShortCourseSchema = createShortCourseSchema.partial();
 export type CreateShortCourseType = z.infer<typeof createShortCourseSchema>;
 export type UpdateShortCourseType = z.infer<typeof updateShortCourseSchema>;
 
-// --- Workshop Schedules ---
 export const workshopTypeSchema = z.enum(["diy", "short_course"]);
 
 export const createScheduleSchema = z.object({
@@ -76,7 +73,6 @@ export const scheduleIdParamsSchema = z.object({
   id: z.string().min(1),
 });
 
-// --- Legacy Workshop & Registrations ---
 export const workshopIdParamsSchema = z.object({
   id: z.string().min(1),
 });
