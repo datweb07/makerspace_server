@@ -26,7 +26,6 @@ import studentLifeRoutes from "./routes/student_life.route";
 import eventsRoutes from "./routes/events.route";
 import diyRoute from "./routes/diy.route";
 import shortCoursesRoute from "./routes/short_courses.route";
-import schedulesRoute from "./routes/schedules.route";
 import careersRoute from "./routes/careers.route";
 import searchRoute from "./routes/search.route";
 import { DEFAULT_API_PREFIX } from "./constants";
@@ -146,7 +145,6 @@ import { DEFAULT_API_PREFIX } from "./constants";
   server.register(eventsRoutes, { prefix: `${DEFAULT_API_PREFIX}/posts/events` });
   server.register(diyRoute, { prefix: `${DEFAULT_API_PREFIX}/workshops/diy` });
   server.register(shortCoursesRoute, { prefix: `${DEFAULT_API_PREFIX}/workshops/short_courses` });
-  server.register(schedulesRoute, { prefix: `${DEFAULT_API_PREFIX}/workshops/schedules` });
   server.register(careersRoute, { prefix: `${DEFAULT_API_PREFIX}/posts/careers` });
   server.register(searchRoute, { prefix: `${DEFAULT_API_PREFIX}/search` });
 

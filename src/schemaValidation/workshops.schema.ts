@@ -44,6 +44,11 @@ export const createShortCourseSchema = z.object({
   offer_by: z.any().optional(), // JSONB
   summarize: z.any().optional(), // JSONB
   draft: z.boolean().optional().default(false),
+  start_time: z.string().nullable().optional(),
+  end_time: z.string().nullable().optional(),
+  max_participants: z.coerce.number().nullable().optional(),
+  type: z.string().optional(),
+  status: z.string().optional(),
 });
 
 export const updateShortCourseSchema = createShortCourseSchema.partial();
