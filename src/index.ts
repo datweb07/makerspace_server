@@ -82,7 +82,7 @@ import { DEFAULT_API_PREFIX } from "./constants";
   });
 
   server.addHook(
-    "preHandler",
+    "preValidation",
     (
       request: FastifyRequest<{
         Querystring: { lang?: LangType };
