@@ -45,7 +45,8 @@ export const workshopsController = {
         booking.email,
         booking.name,
         workshopName,
-        booking.participants
+        booking.participants,
+        input.workshop_type
       );
     } catch (error) {
       console.error("Failed to send booking received email:", error);
@@ -117,13 +118,15 @@ export const workshopsController = {
             workshopName,
             booking.participants,
             startTime,
-            location
+            location,
+            booking.workshop_type
           );
         } else if (input.status === "cancelled") {
           await sendBookingCancelledEmail(
             booking.email,
             booking.name,
-            workshopName
+            workshopName,
+            booking.workshop_type
           );
         }
       }
