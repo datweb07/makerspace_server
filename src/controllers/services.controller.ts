@@ -7,12 +7,15 @@ export const servicesController = {
       data: servicesModel.listCatalog(),
     };
   },
-  createQuoteRequest(input: ServiceQuoteRequestInput) {
-    return servicesModel.createQuoteRequest(input);
+  createQuoteRequest(input: ServiceQuoteRequestInput, lang: string = "vi") {
+    return servicesModel.createQuoteRequest(input, lang);
   },
-  listQuoteRequests() {
+  async listQuoteRequests(lang: string = "vi") {
     return {
-      data: servicesModel.listQuoteRequests(),
+      data: await servicesModel.listQuoteRequests(lang),
     };
   },
+  async deleteQuoteRequest(id: string, lang: string = "vi") {
+    return servicesModel.deleteQuoteRequest(id, lang);
+  }
 };

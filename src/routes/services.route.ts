@@ -4,7 +4,10 @@ import { serviceQuoteRequestSchema, type ServiceQuoteRequestInput } from "../sch
 
 const servicesRoute: FastifyPluginAsync = async (server) => {
   server.get("/catalog", async () => servicesController.listCatalog());
-  server.get("/quote-requests", async () => servicesController.listQuoteRequests());
+  server.get("/quote-requests", async (request) => {
+    const lang = (request.headers["x-custom-lang"] as string) || "vi";
+    return servicesController.listQuoteRequests(lang);
+  });
 
   server.post(
     "/quote-requests",
@@ -13,8 +16,17 @@ const servicesRoute: FastifyPluginAsync = async (server) => {
         body: serviceQuoteRequestSchema,
       },
     },
-    async (request) => servicesController.createQuoteRequest(request.body as ServiceQuoteRequestInput),
+    async (request) => {
+      const lang = (request.headers["x-custom-lang"] as string) || "vi";
+      return servicesController.createQuoteRequest(request.body as ServiceQuoteRequestInput, lang);
+    }
   );
+
+  server.delete("/quote-requests/:id", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    await servicesController.deleteQuoteRequest(id);
+    reply.status(200).send({ message: "Deleted successfully" });
+  });
 };
 
 export default servicesRoute;

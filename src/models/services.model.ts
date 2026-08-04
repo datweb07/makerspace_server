@@ -1,4 +1,5 @@
 import type { ServiceCatalogItem, ServiceQuoteRequestInput } from "../schemaValidation/services.schema";
+import { getPool } from "./db/pool";
 
 const servicesCatalog: ServiceCatalogItem[] = [
   {
@@ -51,17 +52,35 @@ const servicesCatalog: ServiceCatalogItem[] = [
   },
 ];
 
-const quoteRequests: ServiceQuoteRequestInput[] = [];
-
 export const servicesModel = {
   listCatalog() {
     return servicesCatalog;
   },
-  createQuoteRequest(input: ServiceQuoteRequestInput) {
-    quoteRequests.push(input);
-    return input;
+  async createQuoteRequest(input: ServiceQuoteRequestInput, lang: string = "vi") {
+    const pool = getPool(lang);
+    const result = await pool.query({
+      text: `
+        INSERT INTO services.b2b (full_name, email, phone, company_name, description)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING *
+      `,
+      values: [input.fullName, input.email, input.phone, input.companyName || null, input.description],
+    });
+    return result.rows[0];
   },
-  listQuoteRequests() {
-    return quoteRequests;
+  async listQuoteRequests(lang: string = "vi") {
+    const pool = getPool(lang);
+    const result = await pool.query({
+      text: `SELECT * FROM services.b2b ORDER BY created_at DESC`,
+    });
+    return result.rows;
   },
+  async deleteQuoteRequest(id: string, lang: string = "vi") {
+    const pool = getPool(lang);
+    await pool.query({
+      text: `DELETE FROM services.b2b WHERE id = $1`,
+      values: [id],
+    });
+    return true;
+  }
 };
