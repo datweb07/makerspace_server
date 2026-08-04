@@ -31,7 +31,6 @@ export const createShortCourseSchema = z.object({
     const match = val.match(/^https?:\/\/[^\/]+\/(public\/static\/images\/.*)$/);
     return match ? match[1] : val;
   }),
-  description: z.string().optional(),
   content: z.string().optional(),
   duration: z.string().optional(),
   price: z.number().nonnegative("Giá không hợp lệ").optional(),

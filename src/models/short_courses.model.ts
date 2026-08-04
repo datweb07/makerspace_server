@@ -24,14 +24,12 @@ class ShortCoursesModel {
 
   async insert(data: CreateShortCourseType, lang: string = "vi") {
     return getPool(lang).query({
-      text: `INSERT INTO workshops.short_courses (title, slug, cover_image, description, content, duration, price, location, language, level, experience_requirements, objectives, structure, offer_by, summarize, draft, start_time, end_time, max_participants, type, status) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21) RETURNING *`,
+      text: `INSERT INTO workshops.short_courses (title, slug, cover_image, content, duration, price, location, language, level, experience_requirements, objectives, structure, offer_by, summarize, draft, start_time, end_time, max_participants, type, status) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) RETURNING *`,
       values: [
         data.title,
         data.slug,
-
         data.cover_image || null,
-        data.description || null,
         data.content || null,
         data.duration || null,
         data.price || null,
