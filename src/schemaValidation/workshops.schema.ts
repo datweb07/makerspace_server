@@ -45,6 +45,7 @@ export const createShortCourseSchema = z.object({
   draft: z.boolean().optional().default(false),
   start_time: z.string().nullable().optional(),
   end_time: z.string().nullable().optional(),
+  schedule_details: z.string().optional(),
   max_participants: z.coerce.number().nullable().optional(),
   type: z.string().optional(),
   status: z.string().optional(),

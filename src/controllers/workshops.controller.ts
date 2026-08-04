@@ -59,6 +59,16 @@ export const workshopsController = {
       data: res.rows,
     };
   },
+  async findRegistration(email: string, phone: string, workshop_id: string, workshop_type: string, lang: string = "vi") {
+    const res = await workshopBookingsModel.findByContact(email, phone, workshop_id, workshop_type, lang);
+    if (res.rows.length === 0) return null;
+    return res.rows[0];
+  },
+  async addAbsenceRequest(id: string, requestData: { date: string, reason: string }, lang: string = "vi") {
+    const dataWithTime = { ...requestData, submitted_at: new Date().toISOString() };
+    const res = await workshopBookingsModel.addAbsenceRequest(id, dataWithTime, lang);
+    return res.rows[0];
+  },
   async listMyRegistrations(email: string, lang: string = "vi") {
     const res = await workshopBookingsModel.getByEmail(email, lang);
     return {

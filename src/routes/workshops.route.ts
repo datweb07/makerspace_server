@@ -78,6 +78,21 @@ const workshopsRoute: FastifyPluginAsync = async (server) => {
     }
   });
 
+  server.post("/registrations/find", async (request, reply) => {
+    const body = request.body as { email: string; phone: string; workshop_id: string; workshop_type: string };
+    const registration = await workshopsController.findRegistration(body.email, body.phone, body.workshop_id, body.workshop_type, request.lang);
+    if (!registration) {
+      return reply.status(404).send({ message: "Registration not found" });
+    }
+    return { data: registration };
+  });
+
+  server.post("/registrations/absence", async (request, reply) => {
+    const body = request.body as { booking_id: string; date: string; reason: string };
+    const result = await workshopsController.addAbsenceRequest(body.booking_id, { date: body.date, reason: body.reason }, request.lang);
+    return { data: result, message: "Absence request submitted successfully" };
+  });
+
   server.get("/registrations/export", async (request, reply) => {
     const buffer = await workshopsController.exportBookingsExcel(request.lang);
     

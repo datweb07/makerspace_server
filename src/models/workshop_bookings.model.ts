@@ -75,6 +75,27 @@ class WorkshopBookingsModel {
       values: [id],
     });
   }
+
+  async findByContact(email: string, phone: string, workshop_id: string, workshop_type: string, lang: string = "vi") {
+    return getPool(lang).query({
+      text: `
+        SELECT * FROM registrations.workshop_bookings 
+        WHERE email = $1 AND phone = $2 AND workshop_id = $3 AND workshop_type = $4
+      `,
+      values: [email, phone, workshop_id, workshop_type],
+    });
+  }
+
+  async addAbsenceRequest(id: string, requestData: { date: string, reason: string, submitted_at: string }, lang: string = "vi") {
+    return getPool(lang).query({
+      text: `
+        UPDATE registrations.workshop_bookings 
+        SET absence_requests = absence_requests || $1::jsonb, updated_at = CURRENT_TIMESTAMP 
+        WHERE id = $2 RETURNING *
+      `,
+      values: [JSON.stringify([requestData]), id],
+    });
+  }
 }
 
 export default new WorkshopBookingsModel();
