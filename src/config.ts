@@ -21,6 +21,7 @@ const env = {
   SERVER_DOMAIN: process.env.SERVER_DOMAIN ?? `localhost:${process.env.PORT ?? "4000"}`,
   EMAIL_APP_USERNAME: process.env.EMAIL_APP_USERNAME ?? "",
   EMAIL_APP_PASS: process.env.EMAIL_APP_PASS ?? "",
+  EMAIL_RECEIVER: process.env.EMAIL_RECEIVER ?? "makerspace@ueh.edu.vn",
   GOOGLE_SERVICE_ACCOUNT_EMAIL: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ?? "",
   GOOGLE_PRIVATE_KEY: process.env.GOOGLE_PRIVATE_KEY ?? "",
   GOOGLE_SHEET_ID: process.env.GOOGLE_SHEET_ID ?? "",

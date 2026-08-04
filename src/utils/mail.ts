@@ -95,3 +95,44 @@ export const sendBookingCancelledEmail = async (to: string, name: string, worksh
 
   await transporter.sendMail(mailOptions);
 };
+
+export const sendServiceQuoteEmail = async (to: string, name: string) => {
+  const mailOptions = {
+    from: `"UEH - MakerSpace" <${envConfig.EMAIL_APP_USERNAME}>`,
+    to,
+    subject: `[UEH - MakerSpace] Xác nhận Yêu cầu Báo giá Dịch vụ`,
+    html: `
+      <h2>Chào ${name},</h2>
+      <p>Cảm ơn bạn đã gửi Yêu cầu Báo giá Dịch vụ đến UEH - MakerSpace.</p>
+      <p>Hệ thống đã ghi nhận thông tin của bạn. Đội ngũ chuyên viên của chúng tôi sẽ sớm liên hệ lại với bạn để tư vấn chi tiết về các giải pháp và báo giá cụ thể.</p>
+      <br/>
+      <p>Trân trọng,<br/>Đội ngũ UEH - MakerSpace</p>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
+export const sendServiceQuoteAdminEmail = async (data: any) => {
+  const mailOptions = {
+    from: `"UEH - MakerSpace" <${envConfig.EMAIL_APP_USERNAME}>`,
+    to: envConfig.EMAIL_RECEIVER,
+    subject: `[UEH - MakerSpace] Yêu cầu Báo giá Dịch vụ mới từ ${data.fullName}`,
+    html: `
+      <h2>Có một yêu cầu báo giá dịch vụ mới!</h2>
+      <p>Dưới đây là thông tin chi tiết:</p>
+      <ul>
+        <li><strong>Người liên hệ:</strong> ${data.fullName}</li>
+        <li><strong>Email:</strong> ${data.email}</li>
+        <li><strong>Số điện thoại:</strong> ${data.phone}</li>
+        <li><strong>Công ty / Tổ chức:</strong> ${data.companyName || "Không có"}</li>
+      </ul>
+      <h3>Mô tả yêu cầu:</h3>
+      <p>${data.description}</p>
+      <br/>
+      <p>Vui lòng đăng nhập vào trang Admin để xem và quản lý yêu cầu này.</p>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
