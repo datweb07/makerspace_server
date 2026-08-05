@@ -10,7 +10,7 @@ export default async function processUploadPath(request: FastifyRequest) {
     "images",
   );
 
-  const rawPath = request.url.split("?")[0];
+  const rawPath = request.url.split("/upload")[1];
 
   const resolvedPath = path.resolve(baseDir, "." + rawPath);
 
