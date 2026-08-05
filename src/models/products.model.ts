@@ -5,7 +5,7 @@ class ProductsModel {
   async list(lang: string = "vi") {
     const res = await getPool(lang).query({
       text: `
-        SELECT i.*, c.name as category_name
+        SELECT i.*, c.name as category_name, c.slug as category_slug
         FROM products.items i
         LEFT JOIN products.categories c ON i.category_id = c.id
         ORDER BY i.created_at DESC
@@ -15,12 +15,14 @@ class ProductsModel {
       id: row.id,
       name: row.name,
       category: row.category_name || "Khác",
+      categorySlug: row.category_slug || "khac",
       material: row.specs?.material || "",
       price: (row.price === null || Number(row.price) === 0) ? "Liên hệ" : Number(row.price).toLocaleString('vi-VN') + 'đ',
       description: row.content,
       image: row.cover_image,
       images: row.specs?.images || [],
       draft: row.draft,
+      slug: row.slug,
     }));
   }
 
@@ -34,7 +36,7 @@ class ProductsModel {
   async addCategory(input: { name: string; slug?: string }, lang: string = "vi") {
     let slug = input.slug;
     if (!slug) {
-      slug = input.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "");
+      slug = input.name.toLowerCase().replace(/đ/g, "d").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "");
     }
     const res = await getPool(lang).query({
       text: `INSERT INTO products.categories (name, slug) VALUES ($1, $2) RETURNING name`,
@@ -46,7 +48,7 @@ class ProductsModel {
   async updateCategory(id: number, input: { name: string; slug?: string }, lang: string = "vi") {
     let slug = input.slug;
     if (!slug) {
-      slug = input.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "");
+      slug = input.name.toLowerCase().replace(/đ/g, "d").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "");
     }
     const res = await getPool(lang).query({
       text: `UPDATE products.categories SET name = $1, slug = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING id`,
@@ -74,7 +76,7 @@ class ProductsModel {
   async findById(id: number, lang: string = "vi") {
     const res = await getPool(lang).query({
       text: `
-        SELECT i.*, c.name as category_name
+        SELECT i.*, c.name as category_name, c.slug as category_slug
         FROM products.items i
         LEFT JOIN products.categories c ON i.category_id = c.id
         WHERE i.id = $1
@@ -87,12 +89,41 @@ class ProductsModel {
       id: row.id,
       name: row.name,
       category: row.category_name || "Khác",
+      categorySlug: row.category_slug || "khac",
       material: row.specs?.material || "",
       price: (row.price === null || Number(row.price) === 0) ? "Liên hệ" : Number(row.price).toLocaleString('vi-VN') + 'đ',
       description: row.content,
       image: row.cover_image,
       images: row.specs?.images || [],
       draft: row.draft,
+      slug: row.slug,
+    };
+  }
+
+  async findBySlug(slug: string, lang: string = "vi") {
+    const res = await getPool(lang).query({
+      text: `
+        SELECT i.*, c.name as category_name, c.slug as category_slug
+        FROM products.items i
+        LEFT JOIN products.categories c ON i.category_id = c.id
+        WHERE i.slug = $1
+      `,
+      values: [slug],
+    });
+    const row = res.rows[0];
+    if (!row) return null;
+    return {
+      id: row.id,
+      name: row.name,
+      category: row.category_name || "Khác",
+      categorySlug: row.category_slug || "khac",
+      material: row.specs?.material || "",
+      price: (row.price === null || Number(row.price) === 0) ? "Liên hệ" : Number(row.price).toLocaleString('vi-VN') + 'đ',
+      description: row.content,
+      image: row.cover_image,
+      images: row.specs?.images || [],
+      draft: row.draft,
+      slug: row.slug,
     };
   }
 
@@ -100,7 +131,7 @@ class ProductsModel {
     let category_id = null;
     if (input.category) {
       const catRes = await getPool(lang).query({
-        text: `SELECT id FROM products.categories WHERE name = $1`,
+        text: `SELECT id FROM products.categories WHERE slug = $1`,
         values: [input.category],
       });
       if (catRes.rows.length > 0) {
@@ -110,7 +141,7 @@ class ProductsModel {
 
     let slug = input.slug;
     if (!slug) {
-      slug = input.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "");
+      slug = input.name.toLowerCase().replace(/đ/g, "d").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "");
     }
 
     let numericPrice = 0;
@@ -127,7 +158,7 @@ class ProductsModel {
       values: [
         category_id,
         input.name,
-        slug + '-' + Date.now().toString().slice(-4),
+        slug,
         input.image,
         null,
         input.description,
@@ -142,7 +173,7 @@ class ProductsModel {
     let category_id = null;
     if (input.category) {
       const catRes = await getPool(lang).query({
-        text: `SELECT id FROM products.categories WHERE name = $1`,
+        text: `SELECT id FROM products.categories WHERE slug = $1`,
         values: [input.category],
       });
       if (catRes.rows.length > 0) {
@@ -156,15 +187,21 @@ class ProductsModel {
       if (!isNaN(p)) numericPrice = p;
     } catch (e) { }
 
+    let slug = input.slug;
+    if (!slug) {
+      slug = input.name.toLowerCase().replace(/đ/g, "d").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\s_]+/g, "-").replace(/[^a-z0-9-]/g, "");
+    }
+
     await getPool(lang).query({
       text: `
         UPDATE products.items
-        SET category_id = $1, name = $2, cover_image = $3, content = $4, price = $5, specs = $6, updated_at = CURRENT_TIMESTAMP
-        WHERE id = $7
+        SET category_id = $1, name = $2, slug = $3, cover_image = $4, content = $5, price = $6, specs = $7, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $8
       `,
       values: [
         category_id,
         input.name,
+        slug,
         input.image,
         input.description,
         numericPrice,

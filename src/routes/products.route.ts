@@ -93,7 +93,14 @@ const productsRoute: FastifyPluginAsync = async (server) => {
     },
     async (request, reply) => {
       const params = request.params as { id: string };
-      const product = await productsController.getProductById(Number(params.id), (request as any).lang);
+      const numericId = Number(params.id);
+      let product;
+      if (isNaN(numericId)) {
+        product = await productsController.getProductBySlug(params.id, (request as any).lang);
+      } else {
+        product = await productsController.getProductById(numericId, (request as any).lang);
+      }
+      
       if (!product) {
         return reply.code(404).send({ message: "Product not found" });
       }

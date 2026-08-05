@@ -24,6 +24,9 @@ export const productsController = {
   async getProductById(id: number, lang: string = "vi") {
     return await productsModel.findById(id, lang);
   },
+  async getProductBySlug(slug: string, lang: string = "vi") {
+    return await productsModel.findBySlug(slug, lang);
+  },
   async createProduct(input: CreateProductInput, lang: string = "vi") {
     return await productsModel.create(input, lang);
   },

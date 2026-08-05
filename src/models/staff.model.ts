@@ -3,9 +3,22 @@ import { CreateStaffType, UpdateStaffType } from "../schemaValidation/staff.sche
 
 class StaffModel {
   async getAll(lang: string = "vi") {
-    return getPool(lang).query({
+    if (lang === "all") {
+      const viRes = await getPool("vi").query({
+        text: `SELECT * FROM people.staff ORDER BY display_order ASC, id DESC`,
+      });
+      const enRes = await getPool("en").query({
+        text: `SELECT * FROM people.staff ORDER BY display_order ASC, id DESC`,
+      });
+      const viStaff = viRes.rows.map(s => ({ ...s, lang: "vi" }));
+      const enStaff = enRes.rows.map(s => ({ ...s, lang: "en" }));
+      return { rows: [...viStaff, ...enStaff].sort((a, b) => a.display_order - b.display_order || b.id.localeCompare(a.id)) };
+    }
+    
+    const res = await getPool(lang).query({
       text: `SELECT * FROM people.staff ORDER BY display_order ASC, id DESC`,
     });
+    return { rows: res.rows.map(s => ({ ...s, lang })) };
   }
 
   async getById(id: string, lang: string = "vi") {

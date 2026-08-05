@@ -28,7 +28,7 @@ export default async function uploadRoutes(server: FastifyInstance) {
           writeStream.on("error", reject);
         });
 
-        const rawPath = request.url.split("/upload")[1];
+        const rawPath = request.url.split("?")[0];
 
         const normalizePath = (rawPath === "/" || !rawPath ? "" : rawPath) + "/" + fileName;
         const fileUrl = `${envConfig.MEDIA_UPLOAD_FOLDER}/images${normalizePath}`;
