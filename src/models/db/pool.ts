@@ -15,10 +15,21 @@ export function getPool(lang: string = "vi") {
       ssl: (lang === "en" ? envConfig.POSTGRES_DB_HOST_EN : envConfig.POSTGRES_DB_HOST_VI).includes("supabase") 
         ? { rejectUnauthorized: false } 
         : undefined,
-      max: 500,
+      max: 10,                    // Giới hạn an toàn cho cPanel shared hosting
+      min: 2,                     // Giữ 2 connections sẵn sàng
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+      connectionTimeoutMillis: 5000,
+      keepAlive: true,            // Tránh timeout khi idle
+      keepAliveInitialDelayMillis: 0,
     });
   }
   return pools[lang]!;
 }
+
+/** Đóng tất cả DB connections — dùng khi Graceful Shutdown */
+export async function closeAllPools() {
+  const closePromises = Object.values(pools).map((pool) => pool?.end());
+  await Promise.allSettled(closePromises);
+}
+
+export { pools };

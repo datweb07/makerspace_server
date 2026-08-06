@@ -1,6 +1,7 @@
 import path from "path";
 import fs from "fs";
 import cors from "@fastify/cors";
+import rateLimit from "@fastify/rate-limit";
 import fastify, { FastifyRequest, HookHandlerDoneFunction } from "fastify";
 import fastifyCookie from "@fastify/cookie";
 import fastifySession from "@fastify/session";
@@ -29,6 +30,7 @@ import shortCoursesRoute from "./routes/short_courses.route";
 import careersRoute from "./routes/careers.route";
 import searchRoute from "./routes/search.route";
 import { DEFAULT_API_PREFIX } from "./constants";
+import { closeAllPools } from "./models/db/pool";
 
 (async function main() {
   const server = fastify({ logger: true, routerOptions: { ignoreTrailingSlash: true }, maxParamLength: 1000 });
@@ -65,6 +67,17 @@ import { DEFAULT_API_PREFIX } from "./constants";
   server.register(fastifyStatic, {
     root: publicPath,
     prefix: envConfig.BASE_PATH ? `${envConfig.BASE_PATH}/public/` : "/public/",
+  });
+
+  // Rate Limiting — bảo vệ chống spam & brute-force
+  await server.register(rateLimit, {
+    global: true,
+    max: 200,                    // Tối đa 200 req/phút mỗi IP (global)
+    timeWindow: "1 minute",
+    errorResponseBuilder: (_request, context) => ({
+      statusCode: 429,
+      message: `Quá nhiều yêu cầu. Vui lòng thử lại sau ${Math.ceil(context.ttl / 1000)} giây.`,
+    }),
   });
 
   server.register(fastifySensible);
@@ -159,4 +172,21 @@ import { DEFAULT_API_PREFIX } from "./constants";
     server.log.error(error);
     process.exit(1);
   }
+
+  // Graceful Shutdown — tránh orphan process và connection leak trên cPanel
+  const gracefulShutdown = async (signal: string) => {
+    server.log.info(`Received ${signal}, shutting down gracefully...`);
+    try {
+      await server.close();
+      await closeAllPools();
+      server.log.info("Server closed. All DB connections released.");
+    } catch (err) {
+      server.log.error(err, "Error during shutdown");
+    } finally {
+      process.exit(0);
+    }
+  };
+
+  process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+  process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 })();

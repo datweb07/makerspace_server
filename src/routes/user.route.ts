@@ -17,6 +17,12 @@ async function usersRoute(server: FastifyInstance) {
           200: LoginRes,
         },
       },
+      config: {
+        rateLimit: {
+          max: 10,               // Tối đa 10 lần đăng nhập/phút/IP
+          timeWindow: "1 minute",
+        },
+      },
     },
     loginUser
   );
@@ -29,6 +35,12 @@ async function usersRoute(server: FastifyInstance) {
     {
       schema: {
         body: RegisterBody,
+      },
+      config: {
+        rateLimit: {
+          max: 5,                // Tối đa 5 lần đăng ký/phút/IP (gửi email)
+          timeWindow: "1 minute",
+        },
       },
     },
     registerGuest

@@ -40,6 +40,12 @@ const workshopsRoute: FastifyPluginAsync = async (server) => {
       schema: {
         body: createWorkshopRegistrationSchema,
       },
+      config: {
+        rateLimit: {
+          max: 5,                // Tối đa 5 lần đặt chỗ/phút/IP (gửi email)
+          timeWindow: "1 minute",
+        },
+      },
     },
     async (request) => workshopsController.createRegistration(request.body as CreateWorkshopRegistrationInput),
   );
