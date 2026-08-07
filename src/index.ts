@@ -35,7 +35,8 @@ import { closeAllPools } from "./models/db/pool";
 (async function main() {
   const server = fastify({ logger: true, routerOptions: { ignoreTrailingSlash: true }, maxParamLength: 1000 });
 
-  server.register(cors, {
+  // CORS phải được register ĐẦU TIÊN và với await để đảm bảo headers luôn có mặt trước mọi plugin khác
+  await server.register(cors, {
     credentials: true,
     origin: (origin, cb) => {
       if (!origin) return cb(null, true);
@@ -64,21 +65,23 @@ import { closeAllPools } from "./models/db/pool";
     fs.mkdirSync(publicPath, { recursive: true });
   }
 
-  server.register(fastifyStatic, {
+  await server.register(fastifyStatic, {
     root: publicPath,
     prefix: envConfig.BASE_PATH ? `${envConfig.BASE_PATH}/public/` : "/public/",
   });
 
-  // Rate Limiting — bảo vệ chống spam & brute-force
+  // Rate Limiting — đặt SAU CORS để không chặn OPTIONS preflight request
   await server.register(rateLimit, {
     global: true,
     max: 200,                    // Tối đa 200 req/phút mỗi IP (global)
     timeWindow: "1 minute",
-    errorResponseBuilder: (_request, context) => ({
+    skipOnError: true,           // Không rate-limit các request đã bị lỗi
+    errorResponseBuilder: (_request: any, context: any) => ({
       statusCode: 429,
       message: `Quá nhiều yêu cầu. Vui lòng thử lại sau ${Math.ceil(context.ttl / 1000)} giây.`,
     }),
   });
+
 
   server.register(fastifySensible);
   server.register(validatorCompilerPlugin);
@@ -92,6 +95,15 @@ import { closeAllPools } from "./models/db/pool";
       fileSize: 20_000_000,
       files: 10,
     },
+  });
+
+  // Bỏ qua rate-limit cho OPTIONS preflight (CORS) — phải đặt TRƯỚC preValidation
+  server.addHook("onRequest", (request, reply, done) => {
+    if (request.method === "OPTIONS") {
+      reply.header("x-ratelimit-limit", "999999");
+      (request as any).isPreflightRequest = true;
+    }
+    done();
   });
 
   server.addHook(
