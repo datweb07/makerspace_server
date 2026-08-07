@@ -43,7 +43,7 @@ const workshopsRoute: FastifyPluginAsync = async (server) => {
       },
       config: {
         rateLimit: {
-          max: 5,                // Tối đa 5 lần đặt chỗ/phút/IP (gửi email)
+          max: 5,
           timeWindow: "1 minute",
         },
       },

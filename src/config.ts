@@ -2,10 +2,6 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
-/**
- * Yêu cầu biến môi trường bắt buộc — throw error nếu thiếu.
- * Dùng cho secrets (password, JWT, API keys) để tránh fallback yếu.
- */
 function requireEnv(key: string): string {
   const val = process.env[key];
   if (!val) {
@@ -14,16 +10,11 @@ function requireEnv(key: string): string {
   return val;
 }
 
-/**
- * Đọc biến môi trường tùy chọn với giá trị mặc định.
- * Chỉ dùng cho các giá trị NON-SECRET (port, domain, paths).
- */
 function optionalEnv(key: string, defaultValue: string): string {
   return process.env[key] ?? defaultValue;
 }
 
 const env = {
-  // Non-secret configs — có thể có fallback
   PORT: optionalEnv("PORT", "4000"),
   POSTGRES_DB_HOST_EN: optionalEnv("POSTGRES_DB_HOST_EN", optionalEnv("POSTGRES_DB_HOST", "58.186.6.76")),
   POSTGRES_DB_HOST_VI: optionalEnv("POSTGRES_DB_HOST_VI", optionalEnv("POSTGRES_DB_HOST", "58.186.6.76")),
@@ -45,15 +36,12 @@ const env = {
   MEDIA_UPLOAD_FOLDER: optionalEnv("MEDIA_UPLOAD_FOLDER", "public/static"),
   BASE_PATH: process.env.BASE_PATH || (process.env.OS !== "Windows_NT" ? "/makerspace_server" : ""),
 
-  // Secrets — KHÔNG có fallback, server sẽ crash nếu thiếu
-  // (Trên localhost, các giá trị này phải có trong .env)
   POSTGRES_PASSWORD_EN: process.env.POSTGRES_PASSWORD_EN ?? process.env.POSTGRES_PASSWORD ?? "",
   POSTGRES_PASSWORD_VI: process.env.POSTGRES_PASSWORD_VI ?? process.env.POSTGRES_PASSWORD ?? "",
   SESSION_TOKEN_SECRET: optionalEnv("SESSION_TOKEN_SECRET", "makerspace-session-secret-32-chars-minimum!!"),
   JWT_SECRET: optionalEnv("JWT_SECRET", "makerspace-jwt-secret-32-chars-minimum!!"),
 };
 
-// Validate secrets chỉ khi đang chạy trên production
 if (process.env.NODE_ENV === "production") {
   const requiredSecrets = ["POSTGRES_PASSWORD", "SESSION_TOKEN_SECRET", "JWT_SECRET"];
   for (const key of requiredSecrets) {

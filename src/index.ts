@@ -35,7 +35,6 @@ import { closeAllPools } from "./models/db/pool";
 (async function main() {
   const server = fastify({ logger: true, routerOptions: { ignoreTrailingSlash: true }, maxParamLength: 1000 });
 
-  // CORS phải được register ĐẦU TIÊN và với await để đảm bảo headers luôn có mặt trước mọi plugin khác
   await server.register(cors, {
     credentials: true,
     origin: (origin, cb) => {
@@ -44,18 +43,14 @@ import { closeAllPools } from "./models/db/pool";
       try {
         const hostname = new URL(origin).hostname;
 
-        // Localhost (development)
         if (hostname === "localhost" || hostname === "127.0.0.1") {
           return cb(null, true);
         }
 
-        // UEH production domains
         if (hostname.endsWith("ueh.edu.vn")) {
           return cb(null, true);
         }
 
-        // Vercel preview deployments — chỉ cho phép project makerspace cụ thể
-        // (không cho phép toàn bộ *.vercel.app nữa)
         if (hostname.match(/^makerspace-website[a-z0-9-]*\.vercel\.app$/)) {
           return cb(null, true);
         }
@@ -78,12 +73,11 @@ import { closeAllPools } from "./models/db/pool";
     prefix: envConfig.BASE_PATH ? `${envConfig.BASE_PATH}/public/` : "/public/",
   });
 
-  // Rate Limiting — đặt SAU CORS để không chặn OPTIONS preflight request
   await server.register(rateLimit, {
     global: true,
-    max: 200,                    // Tối đa 200 req/phút mỗi IP (global)
+    max: 200,
     timeWindow: "1 minute",
-    skipOnError: true,           // Không rate-limit các request đã bị lỗi
+    skipOnError: true,
     errorResponseBuilder: (_request: any, context: any) => ({
       statusCode: 429,
       message: `Quá nhiều yêu cầu. Vui lòng thử lại sau ${Math.ceil(context.ttl / 1000)} giây.`,
@@ -97,10 +91,9 @@ import { closeAllPools } from "./models/db/pool";
   server.register(fastifySession, {
     secret: envConfig.SESSION_TOKEN_SECRET,
     cookie: {
-      // secure: true chỉ trên production (HTTPS), false trên localhost (HTTP)
       secure: process.env.NODE_ENV === "production",
-      httpOnly: true,    // Ngăn JavaScript trên browser đọc cookie
-      sameSite: "lax",   // Bảo vệ CSRF cơ bản
+      httpOnly: true,
+      sameSite: "lax",
     },
   });
   server.register(fastifyMultipart, {
@@ -110,7 +103,6 @@ import { closeAllPools } from "./models/db/pool";
     },
   });
 
-  // Bỏ qua rate-limit cho OPTIONS preflight (CORS) — phải đặt TRƯỚC preValidation
   server.addHook("onRequest", (request, reply, done) => {
     if (request.method === "OPTIONS") {
       reply.header("x-ratelimit-limit", "999999");
@@ -198,7 +190,6 @@ import { closeAllPools } from "./models/db/pool";
     process.exit(1);
   }
 
-  // Graceful Shutdown — tránh orphan process và connection leak trên cPanel
   const gracefulShutdown = async (signal: string) => {
     server.log.info(`Received ${signal}, shutting down gracefully...`);
     try {
