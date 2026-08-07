@@ -44,11 +44,19 @@ import { closeAllPools } from "./models/db/pool";
       try {
         const hostname = new URL(origin).hostname;
 
+        // Localhost (development)
         if (hostname === "localhost" || hostname === "127.0.0.1") {
           return cb(null, true);
         }
 
-        if (hostname.endsWith("ueh.edu.vn") || hostname.includes("vercel.app")) {
+        // UEH production domains
+        if (hostname.endsWith("ueh.edu.vn")) {
+          return cb(null, true);
+        }
+
+        // Vercel preview deployments — chỉ cho phép project makerspace cụ thể
+        // (không cho phép toàn bộ *.vercel.app nữa)
+        if (hostname.match(/^makerspace-website[a-z0-9-]*\.vercel\.app$/)) {
           return cb(null, true);
         }
 
@@ -88,7 +96,12 @@ import { closeAllPools } from "./models/db/pool";
   server.register(fastifyCookie);
   server.register(fastifySession, {
     secret: envConfig.SESSION_TOKEN_SECRET,
-    cookie: { secure: false },
+    cookie: {
+      // secure: true chỉ trên production (HTTPS), false trên localhost (HTTP)
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,    // Ngăn JavaScript trên browser đọc cookie
+      sameSite: "lax",   // Bảo vệ CSRF cơ bản
+    },
   });
   server.register(fastifyMultipart, {
     limits: {

@@ -2,6 +2,7 @@ import { type FastifyPluginAsync } from "fastify";
 import { workshopsController } from "../controllers/workshops.controller";
 import { createWorkshopRegistrationSchema, listWorkshopsQuerySchema, workshopIdParamsSchema, updateBookingStatusSchema, type CreateWorkshopRegistrationInput, type ListWorkshopsQuery, type UpdateBookingStatusInput } from "../schemaValidation/workshops.schema";
 import { AccountModel } from "../models/account.model";
+import { requireAdmin } from "../middlewares/auth";
 
 const workshopsRoute: FastifyPluginAsync = async (server) => {
   server.get(
@@ -50,7 +51,7 @@ const workshopsRoute: FastifyPluginAsync = async (server) => {
     async (request) => workshopsController.createRegistration(request.body as CreateWorkshopRegistrationInput),
   );
 
-  server.get("/registrations", async (request) => workshopsController.listRegistrations(request.lang));
+  server.get("/registrations", { preHandler: [requireAdmin] }, async (request) => workshopsController.listRegistrations(request.lang));
 
   server.get("/registrations/me", async (request, reply) => {
     const sessionToken = request.headers.authorization || "";
@@ -98,13 +99,13 @@ const workshopsRoute: FastifyPluginAsync = async (server) => {
     return { data: result, message: "Absence request submitted successfully" };
   });
 
-  server.delete("/registrations/absence/:booking_id/:index", async (request, reply) => {
+  server.delete("/registrations/absence/:booking_id/:index", { preHandler: [requireAdmin] }, async (request, reply) => {
     const { booking_id, index } = request.params as { booking_id: string; index: string };
     const result = await workshopsController.deleteAbsenceRequest(booking_id, parseInt(index), request.lang);
     return { data: result, message: "Absence request deleted successfully" };
   });
 
-  server.get("/registrations/export", async (request, reply) => {
+  server.get("/registrations/export", { preHandler: [requireAdmin] }, async (request, reply) => {
     const buffer = await workshopsController.exportBookingsExcel(request.lang);
 
     reply.header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -115,6 +116,7 @@ const workshopsRoute: FastifyPluginAsync = async (server) => {
   server.patch(
     "/registrations/:id/status",
     {
+      preHandler: [requireAdmin],
       schema: {
         body: updateBookingStatusSchema,
       },
@@ -128,6 +130,7 @@ const workshopsRoute: FastifyPluginAsync = async (server) => {
 
   server.delete(
     "/registrations/:id",
+    { preHandler: [requireAdmin] },
     async (request) => {
       const { id } = request.params as { id: string };
       return workshopsController.deleteRegistration(id, request.lang);
